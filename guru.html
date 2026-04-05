@@ -119,7 +119,7 @@
     </main>
 
     <script>
-        const GOOGLE_MACRO_URL = "https://script.google.com/macros/s/AKfycbzaxciHd1EHF368DFD0Sv0Gmk-1QnSsl-ffEbuOEr08OVnKVbbx5cnsLXkiYzAJcI7hlw/exec"; 
+        const GOOGLE_MACRO_URL = localStorage.getItem('GOOGLE_MACRO_URL') || "";
         let db = { users: [], subjects: [], students: [], attendance: [], classLogs: [] };
         let currentUser = null, activeGuruAttendanceState = {}, currentGuruPhotoBase64 = '';
 
