@@ -119,7 +119,7 @@
                     <div class="overflow-x-auto">
                         <table class="w-full text-left whitespace-nowrap min-w-[1000px]">
                             <thead class="bg-slate-50/50 dark:bg-slate-800/50 text-[10px] font-black uppercase text-slate-400">
-                                <tr><th class="px-5 py-3">Hari & Tanggal</th><th class="px-5 py-3">NIP</th><th class="px-5 py-3">Nama Lengkap Guru</th><th class="px-5 py-3 text-center">Jam Masuk</th><th class="px-5 py-3 text-center">Foto Masuk</th><th class="px-5 py-3 text-center">Jam Pulang</th><th class="px-5 py-3 text-center">Foto Pulang</th></tr>
+                                <tr><th class="px-5 py-3">Hari & Tanggal</th><th class="px-5 py-3">NIP</th><th class="px-5 py-3">Nama Lengkap Guru</th><th class="px-5 py-3 text-center">Jam Masuk</th><th class="px-5 py-3 text-center">Foto Masuk</th><th class="px-5 py-3 text-center">Jam Pulang</th><th class="px-5 py-3 text-center">Foto Pulang</th><th class="px-5 py-3 text-right">Aksi</th></tr>
                             </thead>
                             <tbody id="table-kepsek-guru" class="divide-y dark:divide-slate-700/50 dark:text-white"></tbody>
                         </table>
@@ -130,6 +130,7 @@
         </section>
 
         <!-- Modals -->
+        <!-- Modal Riwayat Siswa -->
         <div id="modal-siswa-history" class="fixed inset-0 bg-slate-900/60 z-[100] hidden flex items-center justify-center backdrop-blur-sm transition-all duration-300 opacity-0 p-4">
             <div class="bg-white dark:bg-darkCard rounded-2xl w-full max-w-5xl shadow-2xl max-h-[94vh] flex flex-col dark:text-white border dark:border-slate-700 overflow-y-auto">
                 <div class="sticky top-0 bg-white dark:bg-darkCard z-20 p-5 border-b dark:border-slate-700 flex justify-between items-start text-slate-900 dark:text-white">
@@ -163,6 +164,51 @@
             </div>
         </div>
 
+        <!-- Modal Riwayat Guru -->
+        <div id="modal-guru-history" class="fixed inset-0 bg-slate-900/60 z-[100] hidden flex items-center justify-center backdrop-blur-sm transition-all duration-300 opacity-0 p-4">
+            <div class="bg-white dark:bg-darkCard rounded-2xl w-full max-w-4xl shadow-2xl max-h-[94vh] flex flex-col dark:text-white border dark:border-slate-700 overflow-y-auto">
+                <div class="sticky top-0 bg-white dark:bg-darkCard z-20 p-5 border-b dark:border-slate-700 flex justify-between items-start text-slate-900 dark:text-white">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/40 rounded-xl flex items-center justify-center text-blue-600 shrink-0"><i class="fas fa-chalkboard-teacher text-xl"></i></div>
+                        <div>
+                            <h3 class="text-xl font-black tracking-tight text-slate-900 dark:text-white" id="history-guru-name">Nama Guru</h3>
+                            <div class="flex flex-wrap gap-2 mt-1.5"><span class="bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-md text-[10px] font-bold text-slate-500 uppercase tracking-widest border dark:border-slate-700" id="history-guru-nip">NIP: -</span></div>
+                        </div>
+                    </div>
+                    <button onclick="closeModal('modal-guru-history')" class="w-10 h-10 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-rose-500"><i class="fas fa-times text-lg"></i></button>
+                </div>
+                <div class="p-5 space-y-6">
+                    <div class="flex gap-4 items-end border-b dark:border-slate-700 pb-4">
+                        <div>
+                            <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.1em] mb-2">Periode Laporan</label>
+                            <div class="flex gap-2">
+                                <select id="history-guru-month-select" class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-2 rounded-lg font-bold outline-none dark:text-white text-xs" onchange="updateGuruMonthlyStats()"></select>
+                                <select id="history-guru-year-select" class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-2 rounded-lg font-bold outline-none dark:text-white text-xs" onchange="updateGuruMonthlyStats()"></select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex-grow overflow-hidden">
+                        <div class="bg-slate-50/50 dark:bg-slate-800/50 px-5 py-3 rounded-t-xl border-x border-t dark:border-slate-700"><h4 class="text-xs font-bold uppercase tracking-wider text-slate-500">Kehadiran Bulanan</h4></div>
+                        <div class="rounded-b-xl border dark:border-slate-700 overflow-x-auto no-scrollbar">
+                            <table class="w-full text-left whitespace-nowrap min-w-[600px]">
+                                <thead class="border-b dark:border-slate-700">
+                                    <tr class="font-bold text-[9px] uppercase text-slate-400 tracking-wider">
+                                        <th class="px-5 py-3 text-left border-r dark:border-slate-700">Hari & Tanggal</th>
+                                        <th class="px-5 py-3 text-center border-r dark:border-slate-700">Jam Masuk</th>
+                                        <th class="px-5 py-3 text-center border-r dark:border-slate-700">Foto Masuk</th>
+                                        <th class="px-5 py-3 text-center border-r dark:border-slate-700">Jam Pulang</th>
+                                        <th class="px-5 py-3 text-center border-r dark:border-slate-700">Foto Pulang</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="table-guru-history-modal-body" class="divide-y dark:divide-slate-700"></tbody>
+                            </table>
+                            <div id="history-guru-empty-view" class="hidden py-16 flex-col items-center justify-center text-center"><i class="fas fa-calendar-times text-4xl text-slate-200 dark:text-slate-700 mb-3 block"></i><p class="text-slate-400 font-bold text-sm">Belum ada rekaman absensi guru.</p></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Photo Viewer Modal -->
         <div id="modal-photo-viewer" class="fixed inset-0 bg-slate-900/90 z-[120] hidden flex items-center justify-center backdrop-blur-sm transition-all duration-300 opacity-0 p-4" onclick="closeModal('modal-photo-viewer')">
             <div class="relative max-w-4xl w-full flex justify-center" onclick="event.stopPropagation()">
@@ -176,7 +222,7 @@
     <script>
         const GOOGLE_MACRO_URL = localStorage.getItem('GOOGLE_MACRO_URL') || "https://script.google.com/macros/s/AKfycbzaxciHd1EHF368DFD0Sv0Gmk-1QnSsl-ffEbuOEr08OVnKVbbx5cnsLXkiYzAJcI7hlw/exec"; 
         let db = { users: [], subjects: [], students: [], attendance: [], classLogs: [], attendanceGuru: [] };
-        let currentUser = null, currentHistoryStudentId = null, currentKepsekStudentPage = 1, currentKepsekGuruPage = 1, currentKepsekRekapPage = 1, studentsPerPage = 20, guruPerPage = 20;
+        let currentUser = null, currentHistoryStudentId = null, currentHistoryGuruId = null, currentKepsekStudentPage = 1, currentKepsekGuruPage = 1, currentKepsekRekapPage = 1, studentsPerPage = 20, guruPerPage = 20;
 
         const getTodayStr = () => { const tzoffset = (new Date()).getTimezoneOffset() * 60000; return (new Date(Date.now() - tzoffset)).toISOString().split('T')[0]; };
         const extractDate = (dateVal) => { if (!dateVal) return ''; let d = String(dateVal); return d.includes('T') ? d.split('T')[0] : d.trim(); };
@@ -387,7 +433,7 @@
             const tbody = document.getElementById('table-kepsek-guru');
             if (tbody) {
                 if(paginated.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="7" class="py-16 text-center text-slate-300 font-bold text-sm">Tidak ada data riwayat guru.</td></tr>`;
+                    tbody.innerHTML = `<tr><td colspan="8" class="py-16 text-center text-slate-300 font-bold text-sm">Tidak ada data riwayat guru.</td></tr>`;
                 } else {
                     tbody.innerHTML = paginated.map(r => {
                         const thumbMasuk = getThumb(r.photo_masuk);
@@ -413,6 +459,11 @@
                                 ${r.time_pulang ? `<span class="bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 px-2.5 py-1 rounded-md shadow-sm">${r.time_pulang}</span>` : '-'}
                             </td>
                             <td class="px-5 py-3 text-center">${imgPulangHtml}</td>
+                            <td class="px-5 py-3 text-right">
+                                <button onclick="showGuruHistory('${r.teacher_id}')" class="bg-primary-50 dark:bg-primary-900/30 text-primary-600 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wide hover:bg-primary-600 hover:text-white transition-all shadow-sm">
+                                    Lihat Riwayat <i class="fas fa-chevron-right ml-1"></i>
+                                </button>
+                            </td>
                         </tr>`;
                     }).join('');
                 }
@@ -421,6 +472,100 @@
             const pagContainer = document.getElementById('pagination-kepsek-guru');
             if (pagContainer) {
                 pagContainer.innerHTML = `<span class="text-xs font-bold text-slate-400">${total} Rekaman</span><div class="flex gap-1">` + Array.from({length: pages}, (_, i) => i + 1).filter(p => p === 1 || p === pages || Math.abs(p - currentKepsekGuruPage) <= 1).map(p => `<button onclick="changeKepsekGuruPage(${p})" class="w-7 h-7 rounded-md font-bold text-xs ${p===currentKepsekGuruPage ? 'bg-primary-600 text-white' : 'bg-slate-100 dark:bg-slate-800 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'}">${p}</button>`).join('') + `</div>`;
+            }
+        }
+
+        function showGuruHistory(teacherId) {
+            currentHistoryGuruId = teacherId;
+            const teacher = db.users.find(u => String(u.id) === String(teacherId));
+            if (!teacher) return;
+            
+            document.getElementById('history-guru-name').textContent = teacher.name;
+            document.getElementById('history-guru-nip').textContent = `NIP: ${teacher.username}`;
+            
+            const monthSelect = document.getElementById('history-guru-month-select');
+            const yearSelect = document.getElementById('history-guru-year-select');
+            const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            const now = new Date();
+            
+            if (monthSelect.options.length === 0) {
+                monthSelect.innerHTML = months.map((m, i) => `<option value="${i+1}" ${i === now.getMonth() ? 'selected' : ''}>${m}</option>`).join('');
+                let yearOptions = '';
+                for (let y = 2024; y <= 2100; y++) {
+                    yearOptions += `<option value="${y}" ${y === now.getFullYear() ? 'selected' : ''}>Tahun ${y}</option>`;
+                }
+                yearSelect.innerHTML = yearOptions;
+            }
+            
+            updateGuruMonthlyStats();
+            openModal('modal-guru-history');
+        }
+
+        function updateGuruMonthlyStats() {
+            if (!currentHistoryGuruId) return;
+            const monthInput = parseInt(document.getElementById('history-guru-month-select').value);
+            const yearInput = parseInt(document.getElementById('history-guru-year-select').value);
+            
+            const filtered = db.attendanceGuru.filter(a => {
+                if (String(a.teacher_id) !== String(currentHistoryGuruId)) return false;
+                const parts = String(a.date).split('-');
+                if (parts.length < 2) return false;
+                return parseInt(parts[0]) === yearInput && parseInt(parts[1]) === monthInput;
+            });
+            
+            const tbody = document.getElementById('table-guru-history-modal-body');
+            const emptyView = document.getElementById('history-guru-empty-view');
+            
+            if (filtered.length > 0) {
+                emptyView.style.display = 'none';
+                tbody.parentElement.classList.remove('hidden');
+                
+                filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                const getThumb = (url) => {
+                    if (!url) return '';
+                    const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+                    return match && match[1] ? `https://drive.google.com/thumbnail?id=${match[1]}&sz=w100` : url;
+                };
+
+                const formatTanggal = (dateStr) => {
+                    if (!dateStr) return '-';
+                    const dt = new Date(dateStr);
+                    const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+                    const parts = dateStr.split('-');
+                    if(parts.length !== 3) return dateStr;
+                    return `${days[dt.getDay()]}, ${parts[2]}/${parts[1]}/${parts[0]}`;
+                };
+
+                tbody.innerHTML = filtered.map(r => {
+                    const thumbMasuk = getThumb(r.photo_masuk);
+                    const thumbPulang = getThumb(r.photo_pulang);
+                    
+                    const imgMasukHtml = r.photo_masuk 
+                        ? `<img src="${thumbMasuk}" onclick="openPhotoViewer('${r.photo_masuk}')" class="w-10 h-10 object-cover rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm cursor-pointer hover:scale-110 transition-transform mx-auto" title="Lihat Foto Masuk">` 
+                        : `<span class="text-xs text-slate-400 font-semibold">-</span>`;
+                        
+                    const imgPulangHtml = r.photo_pulang 
+                        ? `<img src="${thumbPulang}" onclick="openPhotoViewer('${r.photo_pulang}')" class="w-10 h-10 object-cover rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm cursor-pointer hover:scale-110 transition-transform mx-auto" title="Lihat Foto Pulang">` 
+                        : `<span class="text-xs text-slate-400 font-semibold">-</span>`;
+
+                    return `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors whitespace-nowrap">
+                        <td class="px-5 py-3 font-bold text-xs text-slate-700 dark:text-slate-300 border-r dark:border-slate-700/50">${formatTanggal(r.date)}</td>
+                        <td class="px-5 py-3 text-center text-xs font-bold text-slate-600 dark:text-slate-300">
+                            ${r.time_masuk ? `<span class="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-2.5 py-1 rounded-md shadow-sm">${r.time_masuk}</span>` : '-'}
+                        </td>
+                        <td class="px-5 py-3 text-center border-r dark:border-slate-700/50">${imgMasukHtml}</td>
+                        <td class="px-5 py-3 text-center text-xs font-bold text-slate-600 dark:text-slate-300">
+                            ${r.time_pulang ? `<span class="bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 px-2.5 py-1 rounded-md shadow-sm">${r.time_pulang}</span>` : '-'}
+                        </td>
+                        <td class="px-5 py-3 text-center">${imgPulangHtml}</td>
+                    </tr>`;
+                }).join('');
+            } else {
+                tbody.innerHTML = '';
+                tbody.parentElement.classList.add('hidden');
+                emptyView.style.display = 'flex';
+                emptyView.classList.remove('hidden');
             }
         }
 
