@@ -242,13 +242,21 @@
             try {
                 const response = await fetch(GOOGLE_MACRO_URL + "?action=getAllData");
                 const result = await response.json();
+                
                 db.users = (result.users || []).map(u => ({ ...u, id: String(u.id), username: String(u.username || u.Username || ''), password: String(u.password || u.Password || ''), role: String(u.role || u.Role || '').toLowerCase(), name: u.name || u.Nama || 'Staff', mapel_id: u.mapel_id || u.Mapel_id || '' }));
                 db.subjects = (result.subjects || []).map(m => ({ ...m, id: String(m.id), name: m.name || m.Nama || 'Tanpa Nama' }));
                 db.students = (result.students || []).map(s => ({ ...s, id: String(s.id && s.id !== 'undefined' ? s.id : (s.nis || s.NIS || 's'+Math.random())), nis: String(s.nis || s.NIS || ''), name: s.name || s.Nama || s['Nama Lengkap'] || 'Siswa', class: s.class || s.Kelas || s.kelas || '' }));
-                if (result.settings) db.settings = result.settings;
+                
+                // Menggabungkan data pengaturan dari database
+                if (result.settings && Object.keys(result.settings).length > 0) {
+                    db.settings = { ...db.settings, ...result.settings };
+                }
+                
                 localStorage.setItem('absensi_db', JSON.stringify(db));
-                loadAdminData();
-            } catch (err) { console.error("Cloud sync fail:", err); }
+                loadAdminData(); // Memastikan form input di-update ulang dari data terbaru
+            } catch (err) { 
+                console.error("Cloud sync fail:", err); 
+            }
         }
 
         function logout() { sessionStorage.removeItem('absensi_user'); window.location.href = 'index.html'; }
@@ -282,11 +290,19 @@
             const selMapel = getEl('teacher-mapel');
             if (selMapel) selMapel.innerHTML = '<option value="">-- Pilih Mata Pelajaran --</option>' + db.subjects.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
 
+            // Menampilkan nilai pengaturan yang diambil dari database (atau fallback default)
             if (db.settings) {
-                if (getEl('setting-lat')) getEl('setting-lat').value = db.settings.lat || '';
-                if (getEl('setting-lng')) getEl('setting-lng').value = db.settings.lng || '';
-                if (getEl('setting-masuk')) getEl('setting-masuk').value = db.settings.jamMasuk || '';
-                if (getEl('setting-pulang')) getEl('setting-pulang').value = db.settings.jamPulang || '';
+                const elLat = getEl('setting-lat');
+                if (elLat) elLat.value = db.settings.lat || '';
+                
+                const elLng = getEl('setting-lng');
+                if (elLng) elLng.value = db.settings.lng || '';
+                
+                const elMasuk = getEl('setting-masuk');
+                if (elMasuk) elMasuk.value = db.settings.jamMasuk || '07:00';
+                
+                const elPulang = getEl('setting-pulang');
+                if (elPulang) elPulang.value = db.settings.jamPulang || '14:00';
             }
         }
 
@@ -377,10 +393,19 @@
             
             localStorage.setItem('absensi_db', JSON.stringify(db));
             showToast("Pengaturan berhasil disimpan!");
-            await syncAdminData();
+            await syncAdminData(); // Kirim ke Google Sheet
         }
 
-        async function manualRefresh(btn) { const org = btn.innerHTML; btn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Memuat...'; btn.disabled = true; await fetchInitialData(); btn.innerHTML = org; btn.disabled = false; showToast("Data ter-update!"); }
+        async function manualRefresh(btn) { 
+            const org = btn.innerHTML; 
+            btn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Memuat...'; 
+            btn.disabled = true; 
+            await fetchInitialData(); 
+            btn.innerHTML = org; 
+            btn.disabled = false; 
+            showToast("Data ter-update dari database!"); 
+        }
+        
         function showToast(m) { const t = document.getElementById('toast'), msg = document.getElementById('toast-message'); if (t && msg) { msg.textContent = m; t.classList.replace('translate-y-20', 'translate-y-0'); t.classList.replace('opacity-0', 'opacity-100'); t.classList.remove('pointer-events-none'); setTimeout(() => { t.classList.replace('translate-y-0', 'translate-y-20'); t.classList.replace('opacity-100', 'opacity-0'); t.classList.add('pointer-events-none'); }, 3000); } }
     </script>
 </body>
