@@ -178,7 +178,7 @@
                     <button onclick="closeModal('modal-guru-history')" class="w-10 h-10 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-rose-500"><i class="fas fa-times text-lg"></i></button>
                 </div>
                 <div class="p-5 space-y-6">
-                    <div class="flex gap-4 items-end border-b dark:border-slate-700 pb-4">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 border-b dark:border-slate-700 pb-4">
                         <div>
                             <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.1em] mb-2">Periode Laporan</label>
                             <div class="flex gap-2">
@@ -186,7 +186,19 @@
                                 <select id="history-guru-year-select" class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-2 rounded-lg font-bold outline-none dark:text-white text-xs" onchange="updateGuruMonthlyStats()"></select>
                             </div>
                         </div>
+                        
+                        <!-- Card Jumlah Kehadiran -->
+                        <div class="bg-primary-50 dark:bg-primary-900/30 px-4 py-2.5 rounded-xl border border-primary-100 dark:border-primary-800/30 flex items-center gap-3 min-w-[160px]">
+                            <div class="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-800/50 flex items-center justify-center text-primary-600 dark:text-primary-400 shrink-0">
+                                <i class="fas fa-check-circle text-lg"></i>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-black uppercase text-slate-500 dark:text-slate-400 tracking-wider mb-0.5">Total Hadir</p>
+                                <p class="text-xl font-black text-primary-600 dark:text-primary-400 leading-none"><span id="history-guru-total-presence">0</span> <span class="text-xs font-bold text-slate-500">Hari</span></p>
+                            </div>
+                        </div>
                     </div>
+
                     <div class="flex-grow overflow-hidden">
                         <div class="bg-slate-50/50 dark:bg-slate-800/50 px-5 py-3 rounded-t-xl border-x border-t dark:border-slate-700"><h4 class="text-xs font-bold uppercase tracking-wider text-slate-500">Kehadiran Bulanan</h4></div>
                         <div class="rounded-b-xl border dark:border-slate-700 overflow-x-auto no-scrollbar">
@@ -237,7 +249,7 @@
         window.onload = async () => {
             currentUser = JSON.parse(sessionStorage.getItem('absensi_user'));
             if (!currentUser || currentUser.role !== 'kepsek') {
-                window.location.href = 'index.html'; // Usir jika bukan kepsek
+                window.location.href = 'index.html'; 
                 return;
             }
             
@@ -513,6 +525,11 @@
                 return parseInt(parts[0]) === yearInput && parseInt(parts[1]) === monthInput;
             });
             
+            // Hitung dan update Total Kehadiran
+            const totalKehadiran = filtered.length;
+            const totalEl = document.getElementById('history-guru-total-presence');
+            if (totalEl) totalEl.textContent = totalKehadiran;
+
             const tbody = document.getElementById('table-guru-history-modal-body');
             const emptyView = document.getElementById('history-guru-empty-view');
             
