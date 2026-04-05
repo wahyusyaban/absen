@@ -62,6 +62,7 @@
                         <button onclick="switchKepsekTab('rekap')" id="tab-k-rekap" class="flex-1 sm:flex-none px-4 py-1.5 rounded-md bg-primary-600 text-white font-bold shadow-sm transition-all flex items-center justify-center gap-1.5 text-xs whitespace-nowrap"><i class="fas fa-chart-bar"></i> Rekap 1-8</button>
                         <button onclick="switchKepsekTab('jurnal')" id="tab-k-jurnal" class="flex-1 sm:flex-none px-4 py-1.5 rounded-md text-slate-500 dark:text-slate-400 font-bold transition-all hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-center gap-1.5 text-xs whitespace-nowrap"><i class="fas fa-book"></i> Jurnal</button>
                         <button onclick="switchKepsekTab('siswa')" id="tab-k-siswa" class="flex-1 sm:flex-none px-4 py-1.5 rounded-md text-slate-500 dark:text-slate-400 font-bold transition-all hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-center gap-1.5 text-xs whitespace-nowrap"><i class="fas fa-users"></i> Riwayat Siswa</button>
+                        <button onclick="switchKepsekTab('guru')" id="tab-k-guru" class="flex-1 sm:flex-none px-4 py-1.5 rounded-md text-slate-500 dark:text-slate-400 font-bold transition-all hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-center gap-1.5 text-xs whitespace-nowrap"><i class="fas fa-chalkboard-teacher"></i> Riwayat Guru</button>
                     </div>
                 </div>
             </div>
@@ -104,6 +105,23 @@
                     <div id="pagination-kepsek-students" class="p-5 border-t dark:border-slate-700 flex flex-col sm:flex-row justify-between items-center gap-4 text-slate-400"></div>
                 </div>
             </div>
+
+            <div id="kepsek-tab-guru" class="hidden animate-in">
+                <div class="bg-white dark:bg-darkCard rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 overflow-hidden">
+                    <div class="p-5 border-b dark:border-slate-700 flex flex-col md:flex-row gap-4 justify-between items-center text-slate-900 dark:text-white">
+                        <div class="relative w-full max-w-sm"><i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i><input type="text" id="kepsek-guru-search" placeholder="Cari nama atau NIP guru..." class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/50 dark:text-white border border-slate-200 dark:border-slate-700 outline-none focus:border-primary-500 text-sm font-semibold" onkeyup="filterKepsekGuru()"></div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left whitespace-nowrap min-w-[1000px]">
+                            <thead class="bg-slate-50/50 dark:bg-slate-800/50 text-[10px] font-black uppercase text-slate-400">
+                                <tr><th class="px-5 py-3">Hari & Tanggal</th><th class="px-5 py-3">NIP</th><th class="px-5 py-3">Nama Lengkap Guru</th><th class="px-5 py-3 text-center">Jam Masuk</th><th class="px-5 py-3 text-center">Foto Masuk</th><th class="px-5 py-3 text-center">Jam Pulang</th><th class="px-5 py-3 text-center">Foto Pulang</th></tr>
+                            </thead>
+                            <tbody id="table-kepsek-guru" class="divide-y dark:divide-slate-700/50 dark:text-white"></tbody>
+                        </table>
+                    </div>
+                    <div id="pagination-kepsek-guru" class="p-5 border-t dark:border-slate-700 flex flex-col sm:flex-row justify-between items-center gap-4 text-slate-400"></div>
+                </div>
+            </div>
         </section>
 
         <!-- Modals -->
@@ -140,12 +158,21 @@
             </div>
         </div>
 
+        <!-- Photo Viewer Modal -->
+        <div id="modal-photo-viewer" class="fixed inset-0 bg-slate-900/90 z-[120] hidden flex items-center justify-center backdrop-blur-sm transition-all duration-300 opacity-0 p-4" onclick="closeModal('modal-photo-viewer')">
+            <div class="relative max-w-4xl w-full flex justify-center" onclick="event.stopPropagation()">
+                <img id="large-photo-img" src="" class="max-h-[85vh] rounded-lg shadow-2xl object-contain bg-white dark:bg-darkCard">
+                <button onclick="closeModal('modal-photo-viewer')" class="absolute -top-4 -right-4 w-10 h-10 bg-rose-500 text-white rounded-full flex items-center justify-center hover:bg-rose-600 shadow-lg border-2 border-white dark:border-slate-800 transition-transform active:scale-95"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+
     </main>
 
     <script>
-        const GOOGLE_MACRO_URL = localStorage.getItem('GOOGLE_MACRO_URL') || "";
-        let db = { users: [], subjects: [], students: [], attendance: [], classLogs: [] };
-        let currentUser = null, currentHistoryStudentId = null, currentKepsekStudentPage = 1, studentsPerPage = 20;
+    <script>
+        const GOOGLE_MACRO_URL = "https://script.google.com/macros/s/AKfycbzaxciHd1EHF368DFD0Sv0Gmk-1QnSsl-ffEbuOEr08OVnKVbbx5cnsLXkiYzAJcI7hlw/exec"; 
+        let db = { users: [], subjects: [], students: [], attendance: [], classLogs: [], attendanceGuru: [] };
+        let currentUser = null, currentHistoryStudentId = null, currentKepsekStudentPage = 1, currentKepsekGuruPage = 1, studentsPerPage = 20, guruPerPage = 20;
 
         const getTodayStr = () => { const tzoffset = (new Date()).getTimezoneOffset() * 60000; return (new Date(Date.now() - tzoffset)).toISOString().split('T')[0]; };
         const extractDate = (dateVal) => { if (!dateVal) return ''; let d = String(dateVal); return d.includes('T') ? d.split('T')[0] : d.trim(); };
@@ -181,6 +208,7 @@
                 db.students = (result.students || []).map(s => ({ ...s, id: String(s.id && s.id !== 'undefined' ? s.id : (s.nis || s.NIS || 's'+Math.random())), nis: String(s.nis || s.NIS || ''), name: s.name || s.Nama || s['Nama Lengkap'] || 'Siswa', class: s.class || s.Kelas || s.kelas || '' }));
                 db.attendance = (result.attendance || []).map(a => ({ ...a, date: extractDate(a.date || a.tanggal), period: String(a.period || a.jam || ''), status: a.status || a.Status || '', student_id: a.student_id, mapel_id: a.mapel_id, teacher_id: a.teacher_id }));
                 db.classLogs = (result.classLogs || []).map(l => ({ ...l, date: extractDate(l.date || l.tanggal), period: String(l.period || l.jam || ''), class: l.class || l.Kelas || '', material: l.material || l.materi || '', photo: l.photo || '', teacher_id: l.teacher_id, mapel_id: l.mapel_id }));
+                db.attendanceGuru = result.attendanceGuru || [];
                 localStorage.setItem('absensi_db', JSON.stringify(db));
                 loadKepsekData();
             } catch (err) { console.error("Cloud sync fail:", err); }
@@ -191,10 +219,12 @@
         function closeModal(id) { const m = document.getElementById(id); if(m) { m.classList.replace('opacity-100', 'opacity-0'); setTimeout(() => m.classList.add('hidden'), 300); } }
 
         function switchKepsekTab(tab) {
-            ['rekap', 'jurnal', 'siswa'].forEach(t => { const el = document.getElementById('kepsek-tab-' + t); if(el) el.classList.add('hidden'); const btn = document.getElementById('tab-k-' + t); if(btn) btn.className = "flex-1 sm:flex-none px-4 py-1.5 rounded-md text-slate-500 dark:text-slate-400 font-bold transition-all hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-center gap-1.5 text-xs whitespace-nowrap"; });
+            ['rekap', 'jurnal', 'siswa', 'guru'].forEach(t => { const el = document.getElementById('kepsek-tab-' + t); if(el) el.classList.add('hidden'); const btn = document.getElementById('tab-k-' + t); if(btn) btn.className = "flex-1 sm:flex-none px-4 py-1.5 rounded-md text-slate-500 dark:text-slate-400 font-bold transition-all hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center justify-center gap-1.5 text-xs whitespace-nowrap"; });
             const target = document.getElementById('kepsek-tab-' + tab); if(target) target.classList.remove('hidden');
             const activeBtn = document.getElementById('tab-k-' + tab); if(activeBtn) activeBtn.className = "flex-1 sm:flex-none px-4 py-1.5 rounded-md bg-primary-600 text-white font-bold shadow-sm transition-all flex items-center justify-center gap-1.5 text-xs whitespace-nowrap";
-            if (tab === 'siswa') loadKepsekStudents(); loadKepsekData(); 
+            if (tab === 'siswa') loadKepsekStudents(); 
+            if (tab === 'guru') loadKepsekGuru();
+            loadKepsekData(); 
         }
 
         function loadKepsekData() {
@@ -285,6 +315,93 @@
                     } rowHtml += `</tr>`; return rowHtml;
                 }).join('');
             } else { tbody.innerHTML = ''; tbody.parentElement.classList.add('hidden'); emptyView.style.display = 'flex'; emptyView.classList.remove('hidden'); }
+        }
+
+        function filterKepsekGuru() { currentKepsekGuruPage = 1; loadKepsekGuru(); }
+        function changeKepsekGuruPage(p) { currentKepsekGuruPage = p; loadKepsekGuru(); }
+        
+        function loadKepsekGuru() {
+            const search = document.getElementById('kepsek-guru-search').value.toLowerCase();
+            
+            let records = db.attendanceGuru.map(a => {
+                const teacher = db.users.find(u => String(u.id) === String(a.teacher_id)) || {};
+                return { ...a, teacherName: teacher.name || 'Tidak Diketahui', teacherNip: teacher.username || '-' };
+            });
+
+            records.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            if (search) {
+                records = records.filter(r => r.teacherName.toLowerCase().includes(search) || r.teacherNip.toLowerCase().includes(search));
+            }
+
+            const total = records.length;
+            const pages = Math.ceil(total / guruPerPage);
+            currentKepsekGuruPage = Math.max(1, Math.min(currentKepsekGuruPage, pages || 1));
+            const paginated = records.slice((currentKepsekGuruPage - 1) * guruPerPage, currentKepsekGuruPage * guruPerPage);
+
+            const getThumb = (url) => {
+                if (!url) return '';
+                const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+                return match && match[1] ? `https://drive.google.com/thumbnail?id=${match[1]}&sz=w100` : url;
+            };
+
+            const formatTanggal = (dateStr) => {
+                if (!dateStr) return '-';
+                const dt = new Date(dateStr);
+                const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+                const parts = dateStr.split('-');
+                if(parts.length !== 3) return dateStr;
+                return `${days[dt.getDay()]}, ${parts[2]}/${parts[1]}/${parts[0]}`;
+            };
+
+            const tbody = document.getElementById('table-kepsek-guru');
+            if (tbody) {
+                if(paginated.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="py-16 text-center text-slate-300 font-bold text-sm">Tidak ada data riwayat guru.</td></tr>`;
+                } else {
+                    tbody.innerHTML = paginated.map(r => {
+                        const thumbMasuk = getThumb(r.photo_masuk);
+                        const thumbPulang = getThumb(r.photo_pulang);
+                        
+                        const imgMasukHtml = r.photo_masuk 
+                            ? `<img src="${thumbMasuk}" onclick="openPhotoViewer('${r.photo_masuk}')" class="w-10 h-10 object-cover rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm cursor-pointer hover:scale-110 transition-transform mx-auto" title="Lihat Foto Masuk">` 
+                            : `<span class="text-xs text-slate-400 font-semibold">-</span>`;
+                            
+                        const imgPulangHtml = r.photo_pulang 
+                            ? `<img src="${thumbPulang}" onclick="openPhotoViewer('${r.photo_pulang}')" class="w-10 h-10 object-cover rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm cursor-pointer hover:scale-110 transition-transform mx-auto" title="Lihat Foto Pulang">` 
+                            : `<span class="text-xs text-slate-400 font-semibold">-</span>`;
+
+                        return `<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors whitespace-nowrap">
+                            <td class="px-5 py-3 text-xs font-bold text-slate-500 dark:text-slate-400">${formatTanggal(r.date)}</td>
+                            <td class="px-5 py-3 text-xs font-bold text-primary-600 dark:text-primary-400">${r.teacherNip}</td>
+                            <td class="px-5 py-3 text-sm font-bold text-slate-800 dark:text-white">${r.teacherName}</td>
+                            <td class="px-5 py-3 text-center text-xs font-bold text-slate-600 dark:text-slate-300">
+                                ${r.time_masuk ? `<span class="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-2.5 py-1 rounded-md shadow-sm">${r.time_masuk}</span>` : '-'}
+                            </td>
+                            <td class="px-5 py-3 text-center">${imgMasukHtml}</td>
+                            <td class="px-5 py-3 text-center text-xs font-bold text-slate-600 dark:text-slate-300">
+                                ${r.time_pulang ? `<span class="bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 px-2.5 py-1 rounded-md shadow-sm">${r.time_pulang}</span>` : '-'}
+                            </td>
+                            <td class="px-5 py-3 text-center">${imgPulangHtml}</td>
+                        </tr>`;
+                    }).join('');
+                }
+            }
+
+            const pagContainer = document.getElementById('pagination-kepsek-guru');
+            if (pagContainer) {
+                pagContainer.innerHTML = `<span class="text-xs font-bold text-slate-400">${total} Rekaman</span><div class="flex gap-1">` + Array.from({length: pages}, (_, i) => i + 1).filter(p => p === 1 || p === pages || Math.abs(p - currentKepsekGuruPage) <= 1).map(p => `<button onclick="changeKepsekGuruPage(${p})" class="w-7 h-7 rounded-md font-bold text-xs ${p===currentKepsekGuruPage ? 'bg-primary-600 text-white' : 'bg-slate-100 dark:bg-slate-800 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'}">${p}</button>`).join('') + `</div>`;
+            }
+        }
+
+        function openPhotoViewer(url) {
+            let finalUrl = url;
+            const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+            if (match && match[1]) {
+                finalUrl = `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
+            }
+            document.getElementById('large-photo-img').src = finalUrl;
+            openModal('modal-photo-viewer');
         }
 
         function setKepsekClass(c) { document.getElementById('filter-kepsek-class').value = c; document.getElementById('kepsek-class-container').dataset.populated = ''; loadKepsekData(); if (!document.getElementById('kepsek-tab-siswa').classList.contains('hidden')) { currentKepsekStudentPage = 1; loadKepsekStudents(); } }
