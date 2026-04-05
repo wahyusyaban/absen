@@ -62,6 +62,7 @@
                         <button onclick="switchAdminTab('murid')" id="tab-murid" class="px-4 py-1.5 rounded-lg bg-white dark:bg-darkCard dark:text-white shadow-sm font-bold text-xs">Siswa</button>
                         <button onclick="switchAdminTab('guru')" id="tab-guru" class="px-4 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 font-bold text-xs">Guru</button>
                         <button onclick="switchAdminTab('mapel')" id="tab-mapel" class="px-4 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 font-bold text-xs">Mapel</button>
+                        <button onclick="switchAdminTab('setting')" id="tab-setting" class="px-4 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 font-bold text-xs">Pengaturan</button>
                     </div>
                 </div>
             </div>
@@ -118,6 +119,49 @@
                     <ul id="list-subjects" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></ul>
                 </div>
             </div>
+
+            <div id="admin-setting" class="hidden animate-in">
+                <div class="bg-white dark:bg-darkCard rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 p-6 space-y-6">
+                    <div class="dark:text-white border-b border-slate-100 dark:border-slate-700 pb-4">
+                        <h3 class="text-lg font-black">Pengaturan Sistem</h3>
+                        <p class="text-xs font-medium text-slate-500 mt-1">Atur koordinat lokasi sekolah dan jam operasional absensi.</p>
+                    </div>
+                    
+                    <form id="setting-form" onsubmit="event.preventDefault(); saveSettings();" class="space-y-5">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div class="space-y-3">
+                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">Koordinat Lokasi (Latitude, Longitude)</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="setting-lat" placeholder="Latitude" class="w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:border-primary-500 text-sm dark:text-white">
+                                    <input type="text" id="setting-lng" placeholder="Longitude" class="w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:border-primary-500 text-sm dark:text-white">
+                                </div>
+                                <button type="button" onclick="getLocation()" class="text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold px-3 py-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition flex items-center gap-1.5 w-max">
+                                    <i class="fas fa-map-marker-alt text-primary-500"></i> Ambil dari Device Ini
+                                </button>
+                                <p class="text-[10px] text-slate-400">Pastikan Anda berada di lokasi sekolah saat mengambil koordinat.</p>
+                            </div>
+                            
+                            <div class="space-y-3">
+                                <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">Jam Operasional Absensi</label>
+                                <div class="flex gap-4">
+                                    <div class="flex-1">
+                                        <label class="block text-[10px] text-slate-500 mb-1">Jam Masuk</label>
+                                        <input type="time" id="setting-masuk" class="w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:border-primary-500 text-sm dark:text-white">
+                                    </div>
+                                    <div class="flex-1">
+                                        <label class="block text-[10px] text-slate-500 mb-1">Jam Pulang</label>
+                                        <input type="time" id="setting-pulang" class="w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:border-primary-500 text-sm dark:text-white">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="pt-4 border-t border-slate-100 dark:border-slate-700 flex justify-end">
+                            <button type="submit" class="bg-primary-600 hover:bg-primary-700 text-white font-bold px-6 py-2.5 rounded-xl shadow-md transition-all active:scale-95 text-sm">Simpan Pengaturan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </section>
 
         <!-- Modals -->
@@ -168,7 +212,7 @@
 
     <script>
         const GOOGLE_MACRO_URL = "https://script.google.com/macros/s/AKfycbzaxciHd1EHF368DFD0Sv0Gmk-1QnSsl-ffEbuOEr08OVnKVbbx5cnsLXkiYzAJcI7hlw/exec"; 
-        let db = { users: [], subjects: [], students: [], attendance: [], classLogs: [] };
+        let db = { users: [], subjects: [], students: [], attendance: [], classLogs: [], settings: { lat: '', lng: '', jamMasuk: '07:00', jamPulang: '14:00' } };
         let currentUser = null;
         let currentStudentPage = 1, studentsPerPage = 20, currentEditId = null, itemToDelete = null;
 
@@ -201,6 +245,7 @@
                 db.users = (result.users || []).map(u => ({ ...u, id: String(u.id), username: String(u.username || u.Username || ''), password: String(u.password || u.Password || ''), role: String(u.role || u.Role || '').toLowerCase(), name: u.name || u.Nama || 'Staff', mapel_id: u.mapel_id || u.Mapel_id || '' }));
                 db.subjects = (result.subjects || []).map(m => ({ ...m, id: String(m.id), name: m.name || m.Nama || 'Tanpa Nama' }));
                 db.students = (result.students || []).map(s => ({ ...s, id: String(s.id && s.id !== 'undefined' ? s.id : (s.nis || s.NIS || 's'+Math.random())), nis: String(s.nis || s.NIS || ''), name: s.name || s.Nama || s['Nama Lengkap'] || 'Siswa', class: s.class || s.Kelas || s.kelas || '' }));
+                if (result.settings) db.settings = result.settings;
                 localStorage.setItem('absensi_db', JSON.stringify(db));
                 loadAdminData();
             } catch (err) { console.error("Cloud sync fail:", err); }
@@ -236,10 +281,17 @@
             if (listM) listM.innerHTML = db.subjects.map(m => `<li class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 flex justify-between items-center group hover:border-primary-500 transition-all"><div><p class="text-[9px] font-bold uppercase text-slate-400 mb-0.5">Mata Pelajaran</p><p class="font-bold text-sm dark:text-white">${m.name}</p></div><div class="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity"><button onclick="editData('subject', '${m.id}')" class="w-7 h-7 rounded-md bg-blue-50 dark:bg-blue-900/30 text-blue-500 flex items-center justify-center"><i class="fas fa-edit text-xs"></i></button><button onclick="confirmDelete('subject', '${m.id}')" class="w-7 h-7 rounded-md bg-rose-50 dark:bg-rose-900/30 text-rose-500 flex items-center justify-center"><i class="fas fa-trash text-xs"></i></button></div></li>`).join('');
             const selMapel = getEl('teacher-mapel');
             if (selMapel) selMapel.innerHTML = '<option value="">-- Pilih Mata Pelajaran --</option>' + db.subjects.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+
+            if (db.settings) {
+                if (getEl('setting-lat')) getEl('setting-lat').value = db.settings.lat || '';
+                if (getEl('setting-lng')) getEl('setting-lng').value = db.settings.lng || '';
+                if (getEl('setting-masuk')) getEl('setting-masuk').value = db.settings.jamMasuk || '';
+                if (getEl('setting-pulang')) getEl('setting-pulang').value = db.settings.jamPulang || '';
+            }
         }
 
         function switchAdminTab(tab) {
-            ['murid', 'guru', 'mapel'].forEach(t => { const el = document.getElementById('admin-' + t); if(el) el.classList.add('hidden'); const btn = document.getElementById('tab-' + t); if(btn) btn.className = "px-4 py-1.5 rounded-lg text-slate-500 font-bold text-xs transition-all hover:bg-white/50"; });
+            ['murid', 'guru', 'mapel', 'setting'].forEach(t => { const el = document.getElementById('admin-' + t); if(el) el.classList.add('hidden'); const btn = document.getElementById('tab-' + t); if(btn) btn.className = "px-4 py-1.5 rounded-lg text-slate-500 font-bold text-xs transition-all hover:bg-white/50"; });
             const target = document.getElementById('admin-' + tab); if(target) target.classList.remove('hidden');
             const activeBtn = document.getElementById('tab-' + tab); if(activeBtn) activeBtn.className = "px-4 py-1.5 rounded-lg bg-white dark:bg-darkCard dark:text-white shadow-sm font-bold text-xs transition-all";
         }
@@ -276,7 +328,36 @@
             localStorage.setItem('absensi_db', JSON.stringify(db));
             const toStringObj = (obj) => Object.fromEntries(Object.entries(obj).map(([k, v]) => { let val = String(v || ''); return [k, val.startsWith("'") ? val : "'" + val]; }));
             const safeUsers = db.users.map(toStringObj), safeSubjects = db.subjects.map(toStringObj), safeStudents = db.students.map(toStringObj);
-            try { showToast("Sinkronisasi..."); await fetch(GOOGLE_MACRO_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ type: "syncMasterData", users: safeUsers, subjects: safeSubjects, students: safeStudents }) }); showToast("Sinkron sukses!"); } catch (e) { showToast("Sinkronisasi gagal."); }
+            try { showToast("Sinkronisasi..."); await fetch(GOOGLE_MACRO_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ type: "syncMasterData", users: safeUsers, subjects: safeSubjects, students: safeStudents, settings: db.settings }) }); showToast("Sinkron sukses!"); } catch (e) { showToast("Sinkronisasi gagal."); }
+        }
+
+        function getLocation() {
+            if (navigator.geolocation) {
+                showToast("Mengambil lokasi...");
+                navigator.geolocation.getCurrentPosition((position) => {
+                    document.getElementById('setting-lat').value = position.coords.latitude;
+                    document.getElementById('setting-lng').value = position.coords.longitude;
+                    showToast("Lokasi berhasil didapatkan!");
+                }, (error) => {
+                    let msg = "Gagal mengambil lokasi.";
+                    if (error.code === 1) msg = "Akses lokasi ditolak oleh browser.";
+                    showToast(msg);
+                }, { enableHighAccuracy: true });
+            } else {
+                showToast("Geolocation tidak didukung browser ini.");
+            }
+        }
+
+        async function saveSettings() {
+            if (!db.settings) db.settings = {};
+            db.settings.lat = document.getElementById('setting-lat').value;
+            db.settings.lng = document.getElementById('setting-lng').value;
+            db.settings.jamMasuk = document.getElementById('setting-masuk').value;
+            db.settings.jamPulang = document.getElementById('setting-pulang').value;
+            
+            localStorage.setItem('absensi_db', JSON.stringify(db));
+            showToast("Pengaturan berhasil disimpan!");
+            await syncAdminData();
         }
 
         async function manualRefresh(btn) { const org = btn.innerHTML; btn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Memuat...'; btn.disabled = true; await fetchInitialData(); btn.innerHTML = org; btn.disabled = false; showToast("Data ter-update!"); }
