@@ -76,6 +76,20 @@
                             <p class="font-bold text-sm text-slate-600 dark:text-slate-300">Mendeteksi lokasi...</p>
                         </div>
 
+                        <!-- Tambahan Upload Foto Selfie -->
+                        <div class="mb-6 border-b border-slate-100 dark:border-slate-700 pb-6">
+                            <label class="block text-[10px] font-black uppercase text-slate-400 mb-2">Foto Selfie Presensi (Wajib) <span class="text-rose-500">*</span></label>
+                            <input type="file" id="guru-selfie-photo" accept="image/*" capture="user" class="hidden" onchange="handleGuruSelfieSelection(this)">
+                            <div id="guru-selfie-dropzone" class="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-4 text-center hover:bg-slate-50 dark:hover:bg-slate-800/50 transition cursor-pointer" onclick="document.getElementById('guru-selfie-photo').click()">
+                                <i class="fas fa-camera text-2xl text-slate-400 mb-2"></i>
+                                <p class="text-slate-600 dark:text-slate-300 font-bold text-xs">Ambil Foto Selfie</p>
+                            </div>
+                            <div id="guru-selfie-preview-container" class="hidden relative mt-2">
+                                <img id="guru-selfie-preview" src="" alt="Preview Selfie" class="w-full h-32 object-cover rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                                <button type="button" onclick="clearGuruSelfie(event)" class="absolute top-2 right-2 bg-rose-500 text-white w-7 h-7 rounded-lg shadow-md hover:bg-rose-600 transition flex items-center justify-center"><i class="fas fa-times text-sm"></i></button>
+                            </div>
+                        </div>
+
                         <div class="grid grid-cols-2 gap-4">
                             <button id="btn-absen-masuk" onclick="submitGuruAttendance('Masuk')" class="opacity-50 cursor-not-allowed bg-green-500 text-white font-black py-3.5 rounded-xl shadow-md transition-all active:scale-95 text-sm" disabled>
                                 <i class="fas fa-sign-in-alt mr-1"></i> MASUK
@@ -168,7 +182,7 @@
     <script>
         const GOOGLE_MACRO_URL = localStorage.getItem('GOOGLE_MACRO_URL') || "";
         let db = { users: [], subjects: [], students: [], attendance: [], classLogs: [], attendanceGuru: [], settings: {} };
-        let currentUser = null, activeGuruAttendanceState = {}, currentGuruPhotoBase64 = '', currentDistance = null;
+        let currentUser = null, activeGuruAttendanceState = {}, currentGuruPhotoBase64 = '', currentGuruSelfieBase64 = '', currentDistance = null;
 
         const getTodayStr = () => { const tzoffset = (new Date()).getTimezoneOffset() * 60000; return (new Date(Date.now() - tzoffset)).toISOString().split('T')[0]; };
 
@@ -243,11 +257,8 @@
         // --- FITUR PRESENSI GURU ---
         function checkGuruLocation() {
             const locStatus = document.getElementById('location-status');
-            const btnMasuk = document.getElementById('btn-absen-masuk');
-            const btnPulang = document.getElementById('btn-absen-pulang');
             
-            btnMasuk.disabled = true; btnMasuk.classList.add('opacity-50', 'cursor-not-allowed');
-            btnPulang.disabled = true; btnPulang.classList.add('opacity-50', 'cursor-not-allowed');
+            updateGuruPresensiButtons();
 
             if (!db.settings || !db.settings.lat || !db.settings.lng) {
                 locStatus.innerHTML = `<i class="fas fa-exclamation-circle text-rose-500 text-3xl mb-3"></i><p class="font-bold text-sm text-slate-700 dark:text-slate-300">Koordinat sekolah belum diatur Admin.</p>`;
@@ -268,29 +279,10 @@
                         
                         if (currentDistance <= 10) {
                             locStatus.innerHTML = `<i class="fas fa-check-circle text-green-500 text-3xl mb-3"></i><p class="font-bold text-sm text-slate-700 dark:text-slate-200">Anda berada di area sekolah.</p><p class="text-xs text-slate-500 mt-1">Jarak: ${currentDistance.toFixed(1)} meter</p>`;
-                            
-                            // Cek apakah sudah absen hari ini
-                            const today = getTodayStr();
-                            const myAtts = db.attendanceGuru ? db.attendanceGuru.filter(a => a.date === today && String(a.teacher_id) === String(currentUser.id)) : [];
-                            const hasMasuk = myAtts.some(a => a.type === 'Masuk');
-                            const hasPulang = myAtts.some(a => a.type === 'Pulang');
-
-                            if (!hasMasuk) {
-                                btnMasuk.disabled = false; btnMasuk.classList.remove('opacity-50', 'cursor-not-allowed');
-                                btnMasuk.innerHTML = '<i class="fas fa-sign-in-alt mr-1"></i> MASUK';
-                            } else {
-                                btnMasuk.innerHTML = '<i class="fas fa-check mr-1"></i> SUDAH MASUK';
-                            }
-
-                            if (hasMasuk && !hasPulang) {
-                                btnPulang.disabled = false; btnPulang.classList.remove('opacity-50', 'cursor-not-allowed');
-                                btnPulang.innerHTML = '<i class="fas fa-sign-out-alt mr-1"></i> PULANG';
-                            } else if (hasPulang) {
-                                btnPulang.innerHTML = '<i class="fas fa-check mr-1"></i> SUDAH PULANG';
-                            }
                         } else {
                             locStatus.innerHTML = `<i class="fas fa-times-circle text-rose-500 text-3xl mb-3"></i><p class="font-bold text-sm text-slate-700 dark:text-slate-200">Anda terlalu jauh dari sekolah.</p><p class="text-xs text-rose-500 mt-1 font-bold">Jarak: ${currentDistance.toFixed(1)}m (Maksimal 10m)</p>`;
                         }
+                        updateGuruPresensiButtons();
                     },
                     (error) => {
                         let msg = "Gagal mengambil lokasi.";
@@ -304,48 +296,142 @@
             }
         }
 
+        function handleGuruSelfieSelection(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 600;
+                        let width = img.width, height = img.height;
+                        if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } } 
+                        else { if (height > MAX_WIDTH) { width *= MAX_WIDTH / height; height = MAX_WIDTH; } }
+                        canvas.width = width; canvas.height = height; 
+                        const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height);
+                        currentGuruSelfieBase64 = canvas.toDataURL('image/jpeg', 0.6);
+                        
+                        document.getElementById('guru-selfie-preview').src = currentGuruSelfieBase64;
+                        document.getElementById('guru-selfie-dropzone').classList.add('hidden');
+                        document.getElementById('guru-selfie-preview-container').classList.remove('hidden');
+                        updateGuruPresensiButtons();
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function clearGuruSelfie(e) {
+            if(e) e.stopPropagation();
+            currentGuruSelfieBase64 = '';
+            document.getElementById('guru-selfie-photo').value = '';
+            document.getElementById('guru-selfie-dropzone').classList.remove('hidden');
+            document.getElementById('guru-selfie-preview-container').classList.add('hidden');
+            document.getElementById('guru-selfie-preview').src = '';
+            updateGuruPresensiButtons();
+        }
+
+        function updateGuruPresensiButtons() {
+            const btnMasuk = document.getElementById('btn-absen-masuk');
+            const btnPulang = document.getElementById('btn-absen-pulang');
+            const today = getTodayStr();
+            const myAtt = db.attendanceGuru ? db.attendanceGuru.find(a => a.date === today && String(a.teacher_id) === String(currentUser.id)) : null;
+            
+            const hasMasuk = myAtt && myAtt.time_masuk;
+            const hasPulang = myAtt && myAtt.time_pulang;
+
+            if (hasMasuk) btnMasuk.innerHTML = '<i class="fas fa-check mr-1"></i> SUDAH MASUK';
+            else btnMasuk.innerHTML = '<i class="fas fa-sign-in-alt mr-1"></i> MASUK';
+
+            if (hasPulang) btnPulang.innerHTML = '<i class="fas fa-check mr-1"></i> SUDAH PULANG';
+            else btnPulang.innerHTML = '<i class="fas fa-sign-out-alt mr-1"></i> PULANG';
+
+            const isValid = currentDistance !== null && currentDistance <= 10 && currentGuruSelfieBase64 !== '';
+
+            if (!hasMasuk) {
+                btnMasuk.disabled = !isValid;
+                if (isValid) btnMasuk.classList.remove('opacity-50', 'cursor-not-allowed');
+                else btnMasuk.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                btnMasuk.disabled = true; btnMasuk.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+
+            if (hasMasuk && !hasPulang) {
+                btnPulang.disabled = !isValid;
+                if (isValid) btnPulang.classList.remove('opacity-50', 'cursor-not-allowed');
+                else btnPulang.classList.add('opacity-50', 'cursor-not-allowed');
+            } else {
+                btnPulang.disabled = true; btnPulang.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
         function renderOwnAttendance() {
             document.getElementById('guru-history-date').textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
             const list = document.getElementById('guru-own-attendance-list');
             const today = getTodayStr();
-            const myAtts = db.attendanceGuru ? db.attendanceGuru.filter(a => a.date === today && String(a.teacher_id) === String(currentUser.id)) : [];
+            const myAtt = db.attendanceGuru ? db.attendanceGuru.find(a => a.date === today && String(a.teacher_id) === String(currentUser.id)) : null;
             
-            if (myAtts.length === 0) {
-                list.innerHTML = `<li class="text-center text-slate-400 text-xs py-8 font-semibold"><i class="fas fa-calendar-times block text-3xl mb-2 text-slate-300 dark:text-slate-700"></i>Belum ada rekaman absen hari ini.</li>`;
+            let html = '';
+            if (!myAtt || (!myAtt.time_masuk && !myAtt.time_pulang)) {
+                html = `<li class="text-center text-slate-400 text-xs py-8 font-semibold"><i class="fas fa-calendar-times block text-3xl mb-2 text-slate-300 dark:text-slate-700"></i>Belum ada rekaman absen hari ini.</li>`;
             } else {
-                list.innerHTML = myAtts.map(a => {
-                    const isMasuk = a.type === 'Masuk';
-                    const icon = isMasuk ? '<i class="fas fa-sign-in-alt text-green-500"></i>' : '<i class="fas fa-sign-out-alt text-rose-500"></i>';
-                    return `<li class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 flex justify-between items-center"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg bg-white dark:bg-slate-900 flex items-center justify-center shadow-sm border border-slate-100 dark:border-slate-700">${icon}</div><div><span class="font-black text-sm dark:text-white block">Absen ${a.type}</span><span class="text-[10px] font-bold text-slate-400">Jarak: ${a.distance_m}m</span></div></div><div class="text-right"><span class="text-xs font-black text-slate-600 dark:text-slate-300 bg-slate-200/50 dark:bg-slate-700 px-3 py-1.5 rounded-lg">${a.time}</span></div></li>`;
-                }).join('');
+                if (myAtt.time_masuk) {
+                    html += `<li class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 flex justify-between items-center"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg bg-white dark:bg-slate-900 flex items-center justify-center shadow-sm border border-slate-100 dark:border-slate-700"><i class="fas fa-sign-in-alt text-green-500"></i></div><div><span class="font-black text-sm dark:text-white block">Absen Masuk</span><span class="text-[10px] font-bold text-slate-400">Jarak: ${myAtt.distance_masuk_m}m</span></div></div><div class="text-right flex items-center gap-3">${myAtt.photo_masuk ? `<a href="${myAtt.photo_masuk}" target="_blank"><img src="${myAtt.photo_masuk}" class="w-8 h-8 rounded-md object-cover border border-slate-200 hover:scale-110 transition-transform"></a>` : ''}<span class="text-xs font-black text-slate-600 dark:text-slate-300 bg-slate-200/50 dark:bg-slate-700 px-3 py-1.5 rounded-lg">${myAtt.time_masuk}</span></div></li>`;
+                }
+                if (myAtt.time_pulang) {
+                    html += `<li class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 flex justify-between items-center"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg bg-white dark:bg-slate-900 flex items-center justify-center shadow-sm border border-slate-100 dark:border-slate-700"><i class="fas fa-sign-out-alt text-rose-500"></i></div><div><span class="font-black text-sm dark:text-white block">Absen Pulang</span><span class="text-[10px] font-bold text-slate-400">Jarak: ${myAtt.distance_pulang_m}m</span></div></div><div class="text-right flex items-center gap-3">${myAtt.photo_pulang ? `<a href="${myAtt.photo_pulang}" target="_blank"><img src="${myAtt.photo_pulang}" class="w-8 h-8 rounded-md object-cover border border-slate-200 hover:scale-110 transition-transform"></a>` : ''}<span class="text-xs font-black text-slate-600 dark:text-slate-300 bg-slate-200/50 dark:bg-slate-700 px-3 py-1.5 rounded-lg">${myAtt.time_pulang}</span></div></li>`;
+                }
             }
+            list.innerHTML = html;
         }
 
         async function submitGuruAttendance(type) {
-            if (currentDistance === null || currentDistance > 10) { 
-                showToast("Gagal: Jarak melebihi 10 meter atau lokasi tidak ditemukan!"); 
+            if (currentDistance === null || currentDistance > 10 || !currentGuruSelfieBase64) { 
+                showToast("Gagal: Lengkapi foto dan pastikan jarak maksimal 10 meter!"); 
                 return; 
             }
             
             const btn = document.getElementById('btn-absen-' + type.toLowerCase());
             btn.disabled = true;
             const oldText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> MENYIMPAN...';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> MENGUNGGAH...';
             
             const today = getTodayStr();
             const now = new Date();
             const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
-            
-            const payload = {
-                id: 'AG' + Date.now() + Math.random().toString(36).substr(2,4),
-                date: today,
-                teacher_id: currentUser.id,
-                type: type,
-                time: timeStr,
-                distance_m: currentDistance.toFixed(2)
-            };
+            let finalPhotoUrl = '';
 
             try {
+                // 1. Upload Foto Selfie
+                const base64Data = currentGuruSelfieBase64.split(',')[1];
+                const formData = new URLSearchParams();
+                formData.append('filename', `Selfie_${type}_${currentUser.name}_${today}_${Date.now()}.jpg`);
+                formData.append('mimeType', 'image/jpeg');
+                formData.append('fileContent', base64Data);
+
+                const uploadRes = await fetch(GOOGLE_MACRO_URL, { method: 'POST', body: formData });
+                const uploadText = await uploadRes.text();
+                let uploadData;
+                try { uploadData = JSON.parse(uploadText); } catch(err) { throw new Error("Server mengembalikan respons yang salah."); }
+
+                if (uploadData.result === "success" || uploadData.status === "success") {
+                    finalPhotoUrl = uploadData.url || "";
+                } else {
+                    throw new Error(uploadData.message || "Gagal mengunggah foto ke Google Drive.");
+                }
+
+                // 2. Simpan Data Absensi
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> MENYIMPAN...';
+                const payload = {
+                    date: today,
+                    teacher_id: currentUser.id,
+                    type: type,
+                    time: timeStr,
+                    distance_m: currentDistance.toFixed(2),
+                    photoUrl: finalPhotoUrl
+                };
+
                 const saveRes = await fetch(GOOGLE_MACRO_URL, { 
                     method: 'POST', 
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -359,13 +445,34 @@
                 
                 showToast(`Berhasil Absen ${type}!`);
                 
-                // Update Lokal Memori
+                // Update Lokal Memori agar langsung merender
                 if (!db.attendanceGuru) db.attendanceGuru = [];
-                db.attendanceGuru.push(payload);
+                const myAttIndex = db.attendanceGuru.findIndex(a => a.date === today && String(a.teacher_id) === String(currentUser.id));
+                
+                if (myAttIndex !== -1) {
+                    if (type === 'Masuk') {
+                        db.attendanceGuru[myAttIndex].time_masuk = timeStr;
+                        db.attendanceGuru[myAttIndex].distance_masuk_m = currentDistance.toFixed(2);
+                        db.attendanceGuru[myAttIndex].photo_masuk = finalPhotoUrl;
+                    } else {
+                        db.attendanceGuru[myAttIndex].time_pulang = timeStr;
+                        db.attendanceGuru[myAttIndex].distance_pulang_m = currentDistance.toFixed(2);
+                        db.attendanceGuru[myAttIndex].photo_pulang = finalPhotoUrl;
+                    }
+                } else {
+                    const newRecord = { date: today, teacher_id: currentUser.id, time_masuk: '', distance_masuk_m: '', photo_masuk: '', time_pulang: '', distance_pulang_m: '', photo_pulang: '' };
+                    if (type === 'Masuk') {
+                        newRecord.time_masuk = timeStr; newRecord.distance_masuk_m = currentDistance.toFixed(2); newRecord.photo_masuk = finalPhotoUrl;
+                    } else {
+                        newRecord.time_pulang = timeStr; newRecord.distance_pulang_m = currentDistance.toFixed(2); newRecord.photo_pulang = finalPhotoUrl;
+                    }
+                    db.attendanceGuru.push(newRecord);
+                }
                 localStorage.setItem('absensi_db', JSON.stringify(db));
                 
+                clearGuruSelfie(); // Bersihkan foto setelah sukses
                 renderOwnAttendance();
-                checkGuruLocation(); // Tombol akan diperbarui otomatis
+                checkGuruLocation();
 
             } catch(err) {
                 showToast("Error: " + err.message);
