@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="id" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin - Absensi Digital</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            if (typeof tailwind !== 'undefined') { tailwind.config = { darkMode: 'class', theme: { extend: { colors: { primary: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', }, darkBg: '#0f172a', darkCard: '#1e293b', darkBorder: '#334155' }, borderRadius: { '2xl': '1rem', '3xl': '1.5rem', } } } } }
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) { document.documentElement.classList.add('dark'); const icon = document.getElementById('theme-icon'); if (icon) icon.classList.replace('fa-moon', 'fa-sun'); }
+        });
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .animate-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+        .dark .glass { background: rgba(15, 23, 42, 0.85); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-darkBg dark:text-slate-100 min-h-screen flex flex-col">
+
+    <!-- Navbar -->
+    <nav class="glass fixed w-full top-0 z-[60] border-b border-slate-200/60 dark:border-slate-700/50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-14 items-center">
+                <div class="flex items-center gap-3 cursor-pointer group" onclick="window.location.href='index.html'">
+                    <div class="w-9 h-9 bg-primary-600 rounded-lg flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform"><i class="fas fa-graduation-cap text-lg"></i></div>
+                    <div class="hidden sm:block"><h1 class="font-extrabold text-base leading-tight tracking-tight dark:text-white">Digital Presence</h1></div>
+                </div>
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <button onclick="toggleTheme()" class="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-700"><i id="theme-icon" class="fas fa-moon text-sm text-slate-500 dark:text-slate-400"></i></button>
+                    <div id="nav-user-info"></div>
+                    <button onclick="logout()" class="bg-rose-500 hover:bg-rose-600 text-white px-4 py-2 rounded-lg text-xs font-bold shadow-md shadow-rose-500/20 transition-all active:scale-95">Keluar</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow pt-20 pb-10 px-4 max-w-7xl mx-auto w-full">
+        <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] transition-all duration-500 translate-y-20 opacity-0 pointer-events-none">
+            <div class="bg-slate-900 dark:bg-slate-100 text-white dark:text-slate-900 px-4 py-3 rounded-xl shadow-xl flex items-center gap-2 border border-slate-700 dark:border-slate-200">
+                <div class="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center text-[9px]"><i class="fas fa-check text-white"></i></div>
+                <span id="toast-message" class="font-bold text-xs truncate max-w-xs">Action Successful</span>
+            </div>
+        </div>
+
+        <section class="animate-in">
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6 text-slate-900 dark:text-white">
+                <div>
+                    <h2 class="text-2xl sm:text-3xl font-black tracking-tight">Panel <span class="text-primary-600">Administrator</span></h2>
+                    <p class="text-slate-400 font-medium text-sm">Kelola data master sekolah.</p>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="manualRefresh(this)" class="px-4 py-2 rounded-xl bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-700 font-bold text-xs shadow-sm flex items-center gap-1.5 dark:text-white transition-all hover:bg-slate-50"><i class="fas fa-sync-alt"></i> Refresh</button>
+                    <div class="p-1 bg-slate-200/50 dark:bg-slate-800 rounded-xl flex gap-1">
+                        <button onclick="switchAdminTab('murid')" id="tab-murid" class="px-4 py-1.5 rounded-lg bg-white dark:bg-darkCard dark:text-white shadow-sm font-bold text-xs">Siswa</button>
+                        <button onclick="switchAdminTab('guru')" id="tab-guru" class="px-4 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 font-bold text-xs">Guru</button>
+                        <button onclick="switchAdminTab('mapel')" id="tab-mapel" class="px-4 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 font-bold text-xs">Mapel</button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="admin-murid" class="animate-in">
+                <div class="bg-white dark:bg-darkCard rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 overflow-hidden">
+                    <div class="p-5 border-b dark:border-slate-700 flex flex-col md:flex-row justify-between gap-4">
+                        <div class="flex flex-col sm:flex-row gap-3 flex-grow max-w-2xl">
+                            <div class="relative flex-grow">
+                                <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                                <input type="text" id="admin-search-student" placeholder="Cari NIS atau Nama..." class="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 dark:text-white outline-none focus:border-primary-500 text-sm font-semibold" onkeyup="filterAdminStudents()">
+                            </div>
+                            <select id="admin-filter-class" class="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 dark:text-white outline-none font-bold text-xs sm:w-40" onchange="filterAdminStudents()">
+                                <option value="ALL">Semua Kelas</option>
+                            </select>
+                        </div>
+                        <button onclick="openModal('modal-student')" class="bg-primary-600 text-white px-5 py-2.5 rounded-xl font-black text-xs shadow-md active:scale-95"><i class="fas fa-plus mr-1.5"></i>Tambah Siswa</button>
+                    </div>
+                    <div class="overflow-x-auto no-scrollbar">
+                        <table class="w-full text-left whitespace-nowrap min-w-[600px]">
+                            <thead class="bg-slate-50/50 dark:bg-slate-800/80 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                <tr><th class="px-5 py-3">NIS</th><th class="px-5 py-3">Nama Lengkap</th><th class="px-5 py-3 text-center">Kelas</th><th class="px-5 py-3 text-right">Aksi</th></tr>
+                            </thead>
+                            <tbody id="table-students" class="divide-y dark:divide-slate-700/50 dark:text-white"></tbody>
+                        </table>
+                    </div>
+                    <div id="pagination-students" class="p-5 border-t dark:border-slate-700 flex flex-col sm:flex-row justify-between items-center gap-4 text-slate-400"></div>
+                </div>
+            </div>
+
+            <div id="admin-guru" class="hidden animate-in">
+                <div class="bg-white dark:bg-darkCard rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 overflow-hidden">
+                    <div class="p-5 border-b dark:border-slate-700 flex justify-between items-center dark:text-white">
+                        <h3 class="text-lg font-black">Akun Pengajar</h3>
+                        <button onclick="openModal('modal-teacher')" class="bg-primary-600 text-white px-5 py-2.5 rounded-xl font-black text-xs shadow-md shadow-primary-500/20">Tambah Guru</button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left whitespace-nowrap min-w-[600px]">
+                            <thead class="bg-slate-50/50 dark:bg-slate-800 text-[10px] font-black uppercase text-slate-400">
+                                <tr><th class="px-5 py-3">Username</th><th class="px-5 py-3">Nama</th><th class="px-5 py-3">Mapel</th><th class="px-5 py-3 text-right">Aksi</th></tr>
+                            </thead>
+                            <tbody id="table-teachers" class="divide-y dark:divide-slate-700/50 dark:text-white"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div id="admin-mapel" class="hidden animate-in">
+                <div class="bg-white dark:bg-darkCard rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 overflow-hidden p-6">
+                    <div class="flex justify-between items-center mb-6 dark:text-white">
+                        <h3 class="text-lg font-black">Data Mata Pelajaran</h3>
+                        <button onclick="openModal('modal-subject')" class="bg-primary-600 text-white px-5 py-2.5 rounded-xl font-black text-xs">Tambah Mapel</button>
+                    </div>
+                    <ul id="list-subjects" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Modals -->
+        <div id="modal-student" class="fixed inset-0 bg-slate-900/60 z-[100] hidden flex items-center justify-center backdrop-blur-sm transition-all duration-300 opacity-0 p-4">
+            <div class="bg-white dark:bg-darkCard rounded-2xl p-6 w-full max-w-sm shadow-2xl dark:text-white">
+                <h3 class="text-lg font-black mb-5">Data Siswa</h3>
+                <form id="modal-student-form" onsubmit="event.preventDefault(); saveData('student');" class="space-y-4 text-slate-900 dark:text-white">
+                    <input type="text" id="student-nis" placeholder="NIS" required class="w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:border-primary-500 text-sm">
+                    <input type="text" id="student-name" placeholder="Nama Lengkap" required class="w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:border-primary-500 text-sm">
+                    <input type="text" id="student-class" placeholder="Kelas (contoh: VII A)" required class="w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:border-primary-500 text-sm dark:text-white">
+                    <div class="flex gap-2 pt-2"><button type="button" onclick="closeModal('modal-student')" class="flex-1 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 font-bold text-sm text-slate-600 dark:text-slate-300">Batal</button><button type="submit" class="flex-1 py-2 rounded-lg bg-primary-600 text-white font-bold text-sm shadow-md">Simpan</button></div>
+                </form>
+            </div>
+        </div>
+
+        <div id="modal-teacher" class="fixed inset-0 bg-slate-900/60 z-[100] hidden flex items-center justify-center backdrop-blur-sm transition-all duration-300 opacity-0 p-4">
+            <div class="bg-white dark:bg-darkCard rounded-2xl p-6 w-full max-w-sm shadow-2xl dark:text-white">
+                <h3 class="text-lg font-black mb-5">Akun Pengajar</h3>
+                <form id="modal-teacher-form" onsubmit="event.preventDefault(); saveData('teacher');" class="space-y-4 text-slate-900 dark:text-white">
+                    <input type="text" id="teacher-username" placeholder="Username / NIP" required class="w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:border-primary-500 text-sm">
+                    <input type="text" id="teacher-name" placeholder="Nama Guru Lengkap" required class="w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:border-primary-500 text-sm">
+                    <input type="password" id="teacher-password" placeholder="Password Baru" required class="w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:border-primary-500 text-sm">
+                    <select id="teacher-mapel" required class="w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:border-primary-500 text-sm"><option value="">-- Pilih Mata Pelajaran --</option></select>
+                    <div class="flex gap-2 pt-2"><button type="button" onclick="closeModal('modal-teacher')" class="flex-1 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 font-bold text-sm text-slate-600 dark:text-slate-300">Batal</button><button type="submit" class="flex-1 py-2 rounded-lg bg-primary-600 text-white font-bold text-sm shadow-md">Simpan</button></div>
+                </form>
+            </div>
+        </div>
+
+        <div id="modal-subject" class="fixed inset-0 bg-slate-900/60 z-[100] hidden flex items-center justify-center backdrop-blur-sm transition-all duration-300 opacity-0 p-4">
+            <div class="bg-white dark:bg-darkCard rounded-2xl p-6 w-full max-w-sm shadow-2xl dark:text-white">
+                <h3 class="text-lg font-black mb-5">Mata Pelajaran</h3>
+                <form id="modal-subject-form" onsubmit="event.preventDefault(); saveData('subject');" class="space-y-4 text-slate-900 dark:text-white">
+                    <input type="text" id="subject-name" placeholder="Nama Mata Pelajaran" required class="w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:border-primary-500 text-sm">
+                    <div class="flex gap-2 pt-2"><button type="button" onclick="closeModal('modal-subject')" class="flex-1 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 font-bold text-sm text-slate-600 dark:text-slate-300">Batal</button><button type="submit" class="flex-1 py-2 rounded-lg bg-primary-600 text-white font-bold text-sm shadow-md">Simpan</button></div>
+                </form>
+            </div>
+        </div>
+
+        <div id="modal-confirm" class="fixed inset-0 bg-slate-900/60 z-[110] hidden flex items-center justify-center backdrop-blur-sm transition-all duration-300 opacity-0 p-4">
+            <div class="bg-white dark:bg-darkCard rounded-2xl p-6 w-full max-w-xs shadow-2xl text-center dark:text-white border dark:border-slate-700">
+                <div class="w-14 h-14 bg-rose-100 dark:bg-rose-900/30 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-4"><i class="fas fa-exclamation-triangle text-2xl"></i></div>
+                <h3 class="text-lg font-black mb-1">Hapus Data?</h3>
+                <p class="text-slate-500 dark:text-slate-400 text-xs mb-5">Data ini akan dihapus permanen. Anda yakin?</p>
+                <div class="flex gap-2"><button onclick="closeModal('modal-confirm')" class="flex-1 py-2.5 rounded-lg bg-slate-100 dark:bg-slate-800 font-bold text-xs text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Batal</button><button onclick="executeDelete()" class="flex-1 py-2.5 rounded-lg bg-rose-500 text-white font-bold text-xs shadow-md shadow-rose-500/20 hover:bg-rose-600 transition-colors">Hapus</button></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const GOOGLE_MACRO_URL = "https://script.google.com/macros/s/AKfycbzaxciHd1EHF368DFD0Sv0Gmk-1QnSsl-ffEbuOEr08OVnKVbbx5cnsLXkiYzAJcI7hlw/exec"; 
+        let db = { users: [], subjects: [], students: [], attendance: [], classLogs: [] };
+        let currentUser = null;
+        let currentStudentPage = 1, studentsPerPage = 20, currentEditId = null, itemToDelete = null;
+
+        function toggleTheme() {
+            const html = document.documentElement; html.classList.toggle('dark');
+            localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
+            const icon = document.getElementById('theme-icon');
+            if(icon) { if(html.classList.contains('dark')) icon.classList.replace('fa-moon', 'fa-sun'); else icon.classList.replace('fa-sun', 'fa-moon'); }
+        }
+
+        window.onload = async () => {
+            currentUser = JSON.parse(sessionStorage.getItem('absensi_user'));
+            if (!currentUser || currentUser.role !== 'admin') {
+                window.location.href = 'index.html'; // Usir jika bukan admin
+                return;
+            }
+            
+            const badgeClass = 'bg-red-100 text-red-600';
+            document.getElementById('nav-user-info').innerHTML = `<div class="flex items-center gap-2"><div class="hidden sm:block text-right"><p class="text-[11px] font-black uppercase tracking-tight text-slate-900 dark:text-white leading-none mb-0.5">${currentUser.name}</p><span class="px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-widest ${badgeClass}">${currentUser.role}</span></div><div class="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center border-2 border-white dark:border-slate-700 shadow-sm"><i class="fas fa-user-circle text-slate-400 text-lg"></i></div></div>`;
+            
+            const localDb = localStorage.getItem('absensi_db');
+            if (localDb) { db = JSON.parse(localDb); loadAdminData(); }
+            fetchInitialData();
+        };
+
+        async function fetchInitialData() {
+            try {
+                const response = await fetch(GOOGLE_MACRO_URL + "?action=getAllData");
+                const result = await response.json();
+                db.users = (result.users || []).map(u => ({ ...u, id: String(u.id), username: String(u.username || u.Username || ''), password: String(u.password || u.Password || ''), role: String(u.role || u.Role || '').toLowerCase(), name: u.name || u.Nama || 'Staff', mapel_id: u.mapel_id || u.Mapel_id || '' }));
+                db.subjects = (result.subjects || []).map(m => ({ ...m, id: String(m.id), name: m.name || m.Nama || 'Tanpa Nama' }));
+                db.students = (result.students || []).map(s => ({ ...s, id: String(s.id && s.id !== 'undefined' ? s.id : (s.nis || s.NIS || 's'+Math.random())), nis: String(s.nis || s.NIS || ''), name: s.name || s.Nama || s['Nama Lengkap'] || 'Siswa', class: s.class || s.Kelas || s.kelas || '' }));
+                localStorage.setItem('absensi_db', JSON.stringify(db));
+                loadAdminData();
+            } catch (err) { console.error("Cloud sync fail:", err); }
+        }
+
+        function logout() { sessionStorage.removeItem('absensi_user'); window.location.href = 'index.html'; }
+
+        function loadAdminData() {
+            const getEl = (id) => document.getElementById(id);
+            const search = getEl('admin-search-student') ? getEl('admin-search-student').value.toLowerCase() : "";
+            const clsFilterInput = getEl('admin-filter-class');
+            const clsFilter = clsFilterInput ? clsFilterInput.value : "ALL";
+            const classes = [...new Set(db.students.map(s => s.class))].filter(Boolean).sort();
+            
+            if (clsFilterInput && !clsFilterInput.dataset.populated) {
+                clsFilterInput.innerHTML = '<option value="ALL">Semua Kelas</option>' + classes.map(c => `<option value="${c}">${c}</option>`).join('');
+                clsFilterInput.dataset.populated = 'true';
+            }
+
+            const tableS = getEl('table-students');
+            if (tableS) {
+                let filteredS = db.students.filter(s => (clsFilter === 'ALL' || s.class === clsFilter) && (s.name.toLowerCase().includes(search) || s.nis.includes(search)));
+                const total = filteredS.length, pages = Math.ceil(total / studentsPerPage);
+                currentStudentPage = Math.max(1, Math.min(currentStudentPage, pages || 1));
+                const paginated = filteredS.slice((currentStudentPage - 1) * studentsPerPage, currentStudentPage * studentsPerPage);
+                tableS.innerHTML = paginated.map(s => `<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors whitespace-nowrap"><td class="px-5 py-3 text-xs font-bold text-slate-400">${s.nis}</td><td class="px-5 py-3 text-sm font-bold dark:text-white">${s.name}</td><td class="px-5 py-3 text-center"><span class="px-2.5 py-1 rounded-md bg-primary-50 dark:bg-primary-900/30 text-primary-600 text-[10px] font-bold border border-primary-100 dark:border-primary-800/30">${s.class}</span></td><td class="px-5 py-3 text-right"><button onclick="editData('student', '${s.id}')" class="w-7 h-7 rounded-md bg-blue-50 dark:bg-blue-900/30 text-blue-500 mr-1"><i class="fas fa-edit text-xs"></i></button><button onclick="confirmDelete('student', '${s.id}')" class="w-7 h-7 rounded-md bg-rose-50 dark:bg-rose-900/30 text-rose-500"><i class="fas fa-trash text-xs"></i></button></td></tr>`).join('');
+                const pagContainer = getEl('pagination-students');
+                if (pagContainer) pagContainer.innerHTML = `<span class="text-xs font-bold text-slate-400">${total} Siswa</span><div class="flex gap-1">` + Array.from({length: pages}, (_, i) => i + 1).filter(p => p === 1 || p === pages || Math.abs(p - currentStudentPage) <= 1).map(p => `<button onclick="changeStudentPage(${p})" class="w-7 h-7 rounded-md font-bold text-xs ${p===currentStudentPage ? 'bg-primary-600 text-white' : 'bg-slate-100 dark:bg-slate-800'}">${p}</button>`).join('') + `</div>`;
+            }
+            const tableT = getEl('table-teachers');
+            if (tableT) tableT.innerHTML = db.users.filter(u => u.role === 'guru').map(t => { const m = db.subjects.find(x => x.id === t.mapel_id); return `<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors whitespace-nowrap"><td class="px-5 py-3 text-xs font-bold text-slate-400">${t.username}</td><td class="px-5 py-3 text-sm font-bold dark:text-white">${t.name}</td><td class="px-5 py-3 text-slate-500 text-xs">${m?m.name:'-'}</td><td class="px-5 py-3 text-right"><button onclick="editData('teacher', '${t.id}')" class="w-7 h-7 rounded-md bg-blue-50 dark:bg-blue-900/30 text-blue-500 mr-1"><i class="fas fa-edit text-xs"></i></button><button onclick="confirmDelete('teacher', '${t.id}')" class="w-7 h-7 rounded-md bg-rose-50 dark:bg-rose-900/30 text-rose-500"><i class="fas fa-trash text-xs"></i></button></td></tr>`; }).join('');
+            const listM = getEl('list-subjects');
+            if (listM) listM.innerHTML = db.subjects.map(m => `<li class="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 flex justify-between items-center group hover:border-primary-500 transition-all"><div><p class="text-[9px] font-bold uppercase text-slate-400 mb-0.5">Mata Pelajaran</p><p class="font-bold text-sm dark:text-white">${m.name}</p></div><div class="flex gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity"><button onclick="editData('subject', '${m.id}')" class="w-7 h-7 rounded-md bg-blue-50 dark:bg-blue-900/30 text-blue-500 flex items-center justify-center"><i class="fas fa-edit text-xs"></i></button><button onclick="confirmDelete('subject', '${m.id}')" class="w-7 h-7 rounded-md bg-rose-50 dark:bg-rose-900/30 text-rose-500 flex items-center justify-center"><i class="fas fa-trash text-xs"></i></button></div></li>`).join('');
+            const selMapel = getEl('teacher-mapel');
+            if (selMapel) selMapel.innerHTML = '<option value="">-- Pilih Mata Pelajaran --</option>' + db.subjects.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
+        }
+
+        function switchAdminTab(tab) {
+            ['murid', 'guru', 'mapel'].forEach(t => { const el = document.getElementById('admin-' + t); if(el) el.classList.add('hidden'); const btn = document.getElementById('tab-' + t); if(btn) btn.className = "px-4 py-1.5 rounded-lg text-slate-500 font-bold text-xs transition-all hover:bg-white/50"; });
+            const target = document.getElementById('admin-' + tab); if(target) target.classList.remove('hidden');
+            const activeBtn = document.getElementById('tab-' + tab); if(activeBtn) activeBtn.className = "px-4 py-1.5 rounded-lg bg-white dark:bg-darkCard dark:text-white shadow-sm font-bold text-xs transition-all";
+        }
+
+        function filterAdminStudents() { currentStudentPage = 1; loadAdminData(); }
+        function changeStudentPage(p) { currentStudentPage = p; loadAdminData(); }
+        function openModal(id, isEdit = false) { if (!isEdit) { currentEditId = null; const f = document.getElementById(id + '-form'); if (f) f.reset(); } const m = document.getElementById(id); if(m) { m.classList.remove('hidden'); setTimeout(() => m.classList.replace('opacity-0', 'opacity-100'), 10); } }
+        function closeModal(id) { const m = document.getElementById(id); if(m) { m.classList.replace('opacity-100', 'opacity-0'); setTimeout(() => m.classList.add('hidden'), 300); } }
+
+        function editData(type, id) {
+            currentEditId = id; const mId = 'modal-' + (type==='student'?'student':(type==='teacher'?'teacher':'subject')); openModal(mId, true);
+            if(type === 'student') { const s = db.students.find(x => String(x.id) === String(id)); document.getElementById('student-nis').value = s.nis; document.getElementById('student-name').value = s.name; document.getElementById('student-class').value = s.class || ""; }
+            else if(type === 'teacher') { const t = db.users.find(x => String(x.id) === String(id)); document.getElementById('teacher-username').value = t.username; document.getElementById('teacher-name').value = t.name; document.getElementById('teacher-password').value = t.password; document.getElementById('teacher-mapel').value = t.mapel_id || ""; }
+            else if(type === 'subject') { const s = db.subjects.find(x => String(x.id) === String(id)); document.getElementById('subject-name').value = s.name; }
+        }
+
+        async function saveData(type) {
+            if(type === 'student') { const nis = document.getElementById('student-nis').value, name = document.getElementById('student-name').value, cls = document.getElementById('student-class').value; if(currentEditId) { const i = db.students.findIndex(x => String(x.id) === String(currentEditId)); db.students[i] = {...db.students[i], nis, name, class: cls}; } else db.students.push({id:'s'+Date.now(), nis, name, class: cls}); closeModal('modal-student'); }
+            else if(type === 'teacher') { const u = document.getElementById('teacher-username').value, n = document.getElementById('teacher-name').value, p = document.getElementById('teacher-password').value, m = document.getElementById('teacher-mapel').value; if(currentEditId) { const i = db.users.findIndex(x => String(x.id) === String(currentEditId)); db.users[i] = {...db.users[i], username:u, name:n, password:p, mapel_id:m}; } else db.users.push({id:'u'+Date.now(), username:u, name:n, password:p, role:'guru', mapel_id:m}); closeModal('modal-teacher'); }
+            else if(type === 'subject') { const n = document.getElementById('subject-name').value; if(currentEditId) { const i = db.subjects.findIndex(x => String(x.id) === String(currentEditId)); db.subjects[i].name = n; } else db.subjects.push({id:'m'+Date.now(), name:n}); closeModal('modal-subject'); }
+            loadAdminData(); await syncAdminData();
+        }
+
+        function confirmDelete(type, id) { itemToDelete = { type, id }; openModal('modal-confirm', true); }
+        async function executeDelete() {
+            if (!itemToDelete) return; const { type, id } = itemToDelete;
+            if (type === 'student') db.students = db.students.filter(x => String(x.id) !== String(id)); 
+            else if (type === 'teacher') db.users = db.users.filter(x => String(x.id) !== String(id)); 
+            else if (type === 'subject') db.subjects = db.subjects.filter(x => String(x.id) !== String(id)); 
+            closeModal('modal-confirm'); itemToDelete = null; loadAdminData(); await syncAdminData(); 
+        }
+
+        async function syncAdminData() {
+            localStorage.setItem('absensi_db', JSON.stringify(db));
+            const toStringObj = (obj) => Object.fromEntries(Object.entries(obj).map(([k, v]) => { let val = String(v || ''); return [k, val.startsWith("'") ? val : "'" + val]; }));
+            const safeUsers = db.users.map(toStringObj), safeSubjects = db.subjects.map(toStringObj), safeStudents = db.students.map(toStringObj);
+            try { showToast("Sinkronisasi..."); await fetch(GOOGLE_MACRO_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ type: "syncMasterData", users: safeUsers, subjects: safeSubjects, students: safeStudents }) }); showToast("Sinkron sukses!"); } catch (e) { showToast("Sinkronisasi gagal."); }
+        }
+
+        async function manualRefresh(btn) { const org = btn.innerHTML; btn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Memuat...'; btn.disabled = true; await fetchInitialData(); btn.innerHTML = org; btn.disabled = false; showToast("Data ter-update!"); }
+        function showToast(m) { const t = document.getElementById('toast'), msg = document.getElementById('toast-message'); if (t && msg) { msg.textContent = m; t.classList.replace('translate-y-20', 'translate-y-0'); t.classList.replace('opacity-0', 'opacity-100'); t.classList.remove('pointer-events-none'); setTimeout(() => { t.classList.replace('translate-y-0', 'translate-y-20'); t.classList.replace('opacity-100', 'opacity-0'); t.classList.add('pointer-events-none'); }, 3000); } }
+    </script>
+</body>
+</html>
