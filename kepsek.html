@@ -279,15 +279,26 @@
             if(tableLogs) tableLogs.innerHTML = logs.length ? logs.map(l => {
                 const g = db.users.find(u => u.id === l.teacher_id), m = db.subjects.find(x => x.id === l.mapel_id);
                 const atts = db.attendance.filter(a => a.date === dateVal && String(a.period) === String(l.period) && a.teacher_id === l.teacher_id && a.mapel_id === l.mapel_id), hadir = atts.filter(a=>a.status==='H').length, total = atts.length, perc = total ? Math.round((hadir/total)*100) : 0;
+                
                 let photoThumbnail = '';
                 if (l.photo && l.photo.length > 10) {
                     const cleanUrl = l.photo.replace(/^'/, '').trim();
                     if (cleanUrl.startsWith('http')) {
                         const match = cleanUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
-                        if (match && match[1]) { const imgUrl = `https://drive.google.com/thumbnail?id=${match[1]}&sz=w400`; photoThumbnail = `<div class="mt-4"><a href="${cleanUrl}" target="_blank" class="block w-32 h-20 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 hover:border-primary-500 transition-colors shadow-sm bg-slate-50 dark:bg-slate-800 relative group"><img src="${imgUrl}" alt="Foto" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"></a></div>`; } 
-                        else photoThumbnail = `<div class="mt-4"><a href="${cleanUrl}" target="_blank" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 dark:bg-blue-900/30 rounded-lg text-[10px] font-bold"><i class="fas fa-external-link-alt"></i> Buka Foto</a></div>`;
-                    } else if (cleanUrl.startsWith('data:image')) photoThumbnail = `<div class="mt-4"><a href="${cleanUrl}" target="_blank" download="Foto_Kelas.jpg" class="block w-32 h-20 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm"><img src="${cleanUrl}" alt="Foto" class="w-full h-full object-cover hover:scale-110 transition-transform duration-300"></a></div>`;
-                } else photoThumbnail = `<div class="mt-3 text-[9px] text-slate-400 font-bold italic border border-dashed border-slate-300 rounded-md px-2.5 py-1 inline-block">Tanpa Foto</div>`;
+                        if (match && match[1]) { 
+                            const imgUrl = `https://drive.google.com/thumbnail?id=${match[1]}&sz=w400`; 
+                            photoThumbnail = `<div class="mt-4"><div onclick="openPhotoViewer('${cleanUrl}')" class="block w-32 h-20 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 hover:border-primary-500 transition-colors shadow-sm bg-slate-50 dark:bg-slate-800 relative group cursor-pointer" title="Klik untuk membuka foto"><img src="${imgUrl}" alt="Foto" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"></div></div>`; 
+                        } 
+                        else {
+                            photoThumbnail = `<div class="mt-4"><button onclick="openPhotoViewer('${cleanUrl}')" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 dark:bg-blue-900/30 rounded-lg text-[10px] font-bold hover:bg-blue-100 transition-colors"><i class="fas fa-expand"></i> Buka Foto</button></div>`;
+                        }
+                    } else if (cleanUrl.startsWith('data:image')) {
+                        photoThumbnail = `<div class="mt-4"><div onclick="openPhotoViewer('${cleanUrl}')" class="block w-32 h-20 overflow-hidden rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm cursor-pointer" title="Klik untuk membuka foto"><img src="${cleanUrl}" alt="Foto" class="w-full h-full object-cover hover:scale-110 transition-transform duration-300"></div></div>`;
+                    }
+                } else {
+                    photoThumbnail = `<div class="mt-3 text-[9px] text-slate-400 font-bold italic border border-dashed border-slate-300 rounded-md px-2.5 py-1 inline-block">Tanpa Foto</div>`;
+                }
+                
                 return `<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors whitespace-nowrap"><td class="px-5 py-4 text-center align-top"><span class="w-7 h-7 mx-auto rounded-md bg-slate-100 dark:bg-slate-800 flex items-center justify-center font-black text-xs mt-1">${l.period}</span></td><td class="px-5 py-4 font-black text-sm text-primary-600 align-top pt-5">${l.class}</td><td class="px-5 py-4 align-top pt-5"><div class="flex items-center gap-2"><span class="font-bold text-sm">${m?m.name:'-'}</span><span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider border-l dark:border-slate-600 pl-2">${g?g.name:'-'}</span></div></td><td class="px-5 py-4 align-top min-w-[250px]"><p class="text-sm font-medium text-slate-700 dark:text-slate-300 whitespace-pre-wrap break-words leading-relaxed">${l.material.replace(/^'/, '')}</p>${photoThumbnail}</td><td class="px-5 py-4 text-center text-sm font-black align-top pt-5">${perc}%</td></tr>`;
             }).join('') : `<tr><td colspan="5" class="py-16 text-center text-slate-300 font-bold text-sm">Belum ada aktivitas tercatat.</td></tr>`;
         }
