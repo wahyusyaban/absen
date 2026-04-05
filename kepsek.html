@@ -169,8 +169,7 @@
     </main>
 
     <script>
-    <script>
-        const GOOGLE_MACRO_URL = "https://script.google.com/macros/s/AKfycbzaxciHd1EHF368DFD0Sv0Gmk-1QnSsl-ffEbuOEr08OVnKVbbx5cnsLXkiYzAJcI7hlw/exec"; 
+        const GOOGLE_MACRO_URL = localStorage.getItem('GOOGLE_MACRO_URL') || "https://script.google.com/macros/s/AKfycbzaxciHd1EHF368DFD0Sv0Gmk-1QnSsl-ffEbuOEr08OVnKVbbx5cnsLXkiYzAJcI7hlw/exec"; 
         let db = { users: [], subjects: [], students: [], attendance: [], classLogs: [], attendanceGuru: [] };
         let currentUser = null, currentHistoryStudentId = null, currentKepsekStudentPage = 1, currentKepsekGuruPage = 1, studentsPerPage = 20, guruPerPage = 20;
 
