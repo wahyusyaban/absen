@@ -211,7 +211,7 @@
     </main>
 
     <script>
-        const GOOGLE_MACRO_URL = "https://script.google.com/macros/s/AKfycbzaxciHd1EHF368DFD0Sv0Gmk-1QnSsl-ffEbuOEr08OVnKVbbx5cnsLXkiYzAJcI7hlw/exec"; 
+        const GOOGLE_MACRO_URL = localStorage.getItem('GOOGLE_MACRO_URL') || "";
         let db = { users: [], subjects: [], students: [], attendance: [], classLogs: [], settings: { lat: '', lng: '', jamMasuk: '07:00', jamPulang: '14:00' } };
         let currentUser = null;
         let currentStudentPage = 1, studentsPerPage = 20, currentEditId = null, itemToDelete = null;
