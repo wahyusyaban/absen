@@ -328,7 +328,27 @@
             localStorage.setItem('absensi_db', JSON.stringify(db));
             const toStringObj = (obj) => Object.fromEntries(Object.entries(obj).map(([k, v]) => { let val = String(v || ''); return [k, val.startsWith("'") ? val : "'" + val]; }));
             const safeUsers = db.users.map(toStringObj), safeSubjects = db.subjects.map(toStringObj), safeStudents = db.students.map(toStringObj);
-            try { showToast("Sinkronisasi..."); await fetch(GOOGLE_MACRO_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ type: "syncMasterData", users: safeUsers, subjects: safeSubjects, students: safeStudents, settings: db.settings }) }); showToast("Sinkron sukses!"); } catch (e) { showToast("Sinkronisasi gagal."); }
+            
+            // Konversi settings agar aman untuk payload API (semua dijadikan string)
+            const safeSettings = db.settings ? toStringObj(db.settings) : {};
+
+            try { 
+                showToast("Sinkronisasi..."); 
+                await fetch(GOOGLE_MACRO_URL, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
+                    body: JSON.stringify({ 
+                        type: "syncMasterData", 
+                        users: safeUsers, 
+                        subjects: safeSubjects, 
+                        students: safeStudents, 
+                        settings: safeSettings 
+                    }) 
+                }); 
+                showToast("Sinkron sukses!"); 
+            } catch (e) { 
+                showToast("Sinkronisasi gagal."); 
+            }
         }
 
         function getLocation() {
