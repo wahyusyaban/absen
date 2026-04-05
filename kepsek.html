@@ -144,12 +144,32 @@
                     <button onclick="closeModal('modal-siswa-history')" class="w-10 h-10 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-rose-500"><i class="fas fa-times text-lg"></i></button>
                 </div>
                 <div class="p-5 space-y-6">
-                    <div class="flex gap-4 items-end border-b dark:border-slate-700 pb-4">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 border-b dark:border-slate-700 pb-4 w-full">
                         <div>
                             <label class="block text-[10px] font-black uppercase text-slate-400 tracking-[0.1em] mb-2">Periode Laporan</label>
                             <div class="flex gap-2">
                                 <select id="history-month-select" class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-2 rounded-lg font-bold outline-none dark:text-white text-xs" onchange="updateMonthlyStats()"></select>
                                 <select id="history-year-select" class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-2 rounded-lg font-bold outline-none dark:text-white text-xs" onchange="updateMonthlyStats()"></select>
+                            </div>
+                        </div>
+                        
+                        <!-- Card Akumulasi Kehadiran Siswa -->
+                        <div class="flex flex-wrap gap-2 w-full sm:w-auto">
+                            <div class="bg-green-50 dark:bg-green-900/30 px-3 py-2 rounded-lg border border-green-100 dark:border-green-800/30 flex-1 sm:flex-none text-center min-w-[60px]">
+                                <p class="text-[9px] font-black uppercase text-green-600 dark:text-green-400 tracking-wider mb-0.5">Hadir</p>
+                                <p class="text-xl font-black text-green-700 dark:text-green-300 leading-none" id="history-student-hadir">0</p>
+                            </div>
+                            <div class="bg-blue-50 dark:bg-blue-900/30 px-3 py-2 rounded-lg border border-blue-100 dark:border-blue-800/30 flex-1 sm:flex-none text-center min-w-[60px]">
+                                <p class="text-[9px] font-black uppercase text-blue-600 dark:text-blue-400 tracking-wider mb-0.5">Izin</p>
+                                <p class="text-xl font-black text-blue-700 dark:text-blue-300 leading-none" id="history-student-izin">0</p>
+                            </div>
+                            <div class="bg-yellow-50 dark:bg-yellow-900/30 px-3 py-2 rounded-lg border border-yellow-100 dark:border-yellow-800/30 flex-1 sm:flex-none text-center min-w-[60px]">
+                                <p class="text-[9px] font-black uppercase text-yellow-600 dark:text-yellow-400 tracking-wider mb-0.5">Sakit</p>
+                                <p class="text-xl font-black text-yellow-700 dark:text-yellow-300 leading-none" id="history-student-sakit">0</p>
+                            </div>
+                            <div class="bg-rose-50 dark:bg-rose-900/30 px-3 py-2 rounded-lg border border-rose-100 dark:border-rose-800/30 flex-1 sm:flex-none text-center min-w-[60px]">
+                                <p class="text-[9px] font-black uppercase text-rose-600 dark:text-rose-400 tracking-wider mb-0.5">Alpa</p>
+                                <p class="text-xl font-black text-rose-700 dark:text-rose-300 leading-none" id="history-student-alpa">0</p>
                             </div>
                         </div>
                     </div>
@@ -386,13 +406,43 @@
         }
 
         function updateMonthlyStats() {
-            if (!currentHistoryStudentId) return; const monthInput = parseInt(document.getElementById('history-month-select').value), yearInput = parseInt(document.getElementById('history-year-select').value);
-            const filtered = db.attendance.filter(a => { if (String(a.student_id) !== String(currentHistoryStudentId)) return false; const parts = String(a.date).split('-'); if (parts.length < 2) return false; return parseInt(parts[0]) === yearInput && parseInt(parts[1]) === monthInput; });
+            if (!currentHistoryStudentId) return; 
+            const monthInput = parseInt(document.getElementById('history-month-select').value);
+            const yearInput = parseInt(document.getElementById('history-year-select').value);
+            
+            const filtered = db.attendance.filter(a => { 
+                if (String(a.student_id) !== String(currentHistoryStudentId)) return false; 
+                const parts = String(a.date).split('-'); 
+                if (parts.length < 2) return false; 
+                return parseInt(parts[0]) === yearInput && parseInt(parts[1]) === monthInput; 
+            });
+
+            // Menghitung akumulasi kehadiran (HANYA BERDASARKAN JAM KE-2)
+            let totalHadir = 0, totalIzin = 0, totalSakit = 0, totalAlpa = 0;
+            const uniqueDates = [...new Set(filtered.map(a => a.date))].sort((a, b) => b.localeCompare(a));
+            
+            uniqueDates.forEach(dateStr => {
+                // Ambil status khusus di jam ke-2
+                const attJam2 = filtered.find(a => a.date === dateStr && String(a.period) === '2');
+                if (attJam2) {
+                    if (attJam2.status === 'H') totalHadir++;
+                    else if (attJam2.status === 'I') totalIzin++;
+                    else if (attJam2.status === 'S') totalSakit++;
+                    else if (attJam2.status === 'A') totalAlpa++;
+                }
+            });
+
+            // Update UI card akumulasi
+            const elHadir = document.getElementById('history-student-hadir'); if (elHadir) elHadir.textContent = totalHadir;
+            const elIzin = document.getElementById('history-student-izin'); if (elIzin) elIzin.textContent = totalIzin;
+            const elSakit = document.getElementById('history-student-sakit'); if (elSakit) elSakit.textContent = totalSakit;
+            const elAlpa = document.getElementById('history-student-alpa'); if (elAlpa) elAlpa.textContent = totalAlpa;
+
             const tbody = document.getElementById('table-siswa-history-modal-body'), emptyView = document.getElementById('history-empty-view');
             if (filtered.length > 0) {
                 emptyView.style.display = 'none'; tbody.parentElement.classList.remove('hidden');
-                const dates = [...new Set(filtered.map(a => a.date))].sort((a, b) => b.localeCompare(a));
-                tbody.innerHTML = dates.map(dateStr => {
+                
+                tbody.innerHTML = uniqueDates.map(dateStr => {
                     const dt = new Date(dateStr), days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'], dtParts = dateStr.split('-');
                     let rowHtml = `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors whitespace-nowrap"><td class="px-5 py-3 font-bold text-xs text-slate-700 dark:text-slate-300 border-r dark:border-slate-700/50">${days[dt.getDay()]}, ${dtParts[2]}/${dtParts[1]}/${dtParts[0]}</td>`;
                     for (let i = 1; i <= 8; i++) {
