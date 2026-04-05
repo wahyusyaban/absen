@@ -566,6 +566,7 @@
             const date = document.getElementById('guru-date').value, period = document.getElementById('guru-period').value, cls = document.getElementById('guru-class').value, mat = document.getElementById('guru-material').value, selectedSubject = document.getElementById('guru-subject').value;
             const btn = document.getElementById('btn-submit-attendance'); 
             btn.disabled = true; btn.innerHTML = 'Memproses...'; let finalPhotoUrl = '';
+            
             try { 
                 if (currentGuruPhotoBase64) {
                     btn.innerHTML = 'Mengunggah Foto...';
@@ -577,14 +578,19 @@
                     let uploadData;
                     try { uploadData = JSON.parse(uploadText); } catch(e) { throw new Error("Format respons upload salah."); }
                     
-                    if (uploadData.result === "success" || uploadData.status === "success") finalPhotoUrl = uploadData.url || "";
-                    else throw new Error(uploadData.message || "Gagal mengunggah foto.");
+                    if (uploadData.result === "success" || uploadData.status === "success") {
+                        finalPhotoUrl = uploadData.url || "";
+                    } else {
+                        throw new Error(uploadData.message || "Gagal mengunggah foto.");
+                    }
+                } // Penutup blok 'if (currentGuruPhotoBase64)' yang sebelumnya hilang
+                
                 // 2. Simpan Data Absensi (JSON)
                 btn.innerHTML = 'Menyimpan Absensi...';
                 const log = { id: 'L'+Date.now(), date, period, mapel_id: selectedSubject, teacher_id: currentUser.id, class: cls, material: mat, photo: finalPhotoUrl };
                 const atts = Object.entries(activeGuruAttendanceState).map(([sid, st]) => ({ id: 'A'+Date.now()+Math.random().toString(36).substr(2,4), date, period, mapel_id: selectedSubject, teacher_id: currentUser.id, student_id: sid, status: st }));
                 
-                // DATA LANGSUNG DIKIRIM (TANPA FUNGSI toStringObj)
+                // DATA LANGSUNG DIKIRIM
                 const saveRes = await fetch(GOOGLE_MACRO_URL, { 
                     method: 'POST', 
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -594,14 +600,28 @@
                 const saveText = await saveRes.text();
                 let saveDataParsed;
                 try {
+                    saveDataParsed = JSON.parse(saveText);
+                } catch(e) {
+                    throw new Error("Format respons server saat menyimpan salah.");
+                }
+
+                if (saveDataParsed.status === "error") throw new Error(saveDataParsed.message || "Gagal menyimpan.");
                 
                 showToast("Absensi Kelas Berhasil Disimpan!"); 
                 
-                document.getElementById('guru-material').value = ''; document.getElementById('guru-period').value = '';
-                document.querySelectorAll('input[name="g_period"]').forEach(r => r.checked = false); clearGuruPhoto();
+                document.getElementById('guru-material').value = ''; 
+                document.getElementById('guru-period').value = '';
+                document.querySelectorAll('input[name="g_period"]').forEach(r => r.checked = false); 
+                clearGuruPhoto();
 
-            } catch (e) { showToast(e.message); checkGuruFormValidity(); }
-            finally { btn.innerHTML = 'SIMPAN ABSENSI KELAS'; fetchInitialData(); }
+            } catch (e) { 
+                showToast(e.message); 
+                checkGuruFormValidity(); 
+            }
+            finally { 
+                btn.innerHTML = 'SIMPAN ABSENSI KELAS'; 
+                fetchInitialData(); 
+            }
         }
 
         function showToast(m) { const t = document.getElementById('toast'), msg = document.getElementById('toast-message'); if (t && msg) { msg.textContent = m; t.classList.replace('translate-y-20', 'translate-y-0'); t.classList.replace('opacity-0', 'opacity-100'); t.classList.remove('pointer-events-none'); setTimeout(() => { t.classList.replace('translate-y-0', 'translate-y-20'); t.classList.replace('opacity-100', 'opacity-0'); t.classList.add('pointer-events-none'); }, 3000); } }
