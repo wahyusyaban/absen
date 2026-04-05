@@ -52,65 +52,112 @@
         </div>
 
         <section class="animate-in">
-             <div class="mb-6 dark:text-white text-slate-900">
-                <h2 class="text-2xl sm:text-3xl font-black tracking-tight"><span class="text-primary-600">Presensi</span> Kelas</h2>
-                <p class="text-slate-400 font-medium text-sm mt-1">Status Anda: <span id="guru-mapel-name" class="font-black text-slate-900 dark:text-white underline decoration-primary-500 decoration-2"></span></p>
+            <!-- Header & Tab Navigation -->
+            <div class="mb-6 flex flex-col md:flex-row justify-between md:items-end gap-4 dark:text-white text-slate-900 border-b border-slate-200 dark:border-slate-700 pb-4">
+                <div>
+                    <h2 class="text-2xl sm:text-3xl font-black tracking-tight">Panel <span class="text-primary-600">Guru</span></h2>
+                    <p class="text-slate-400 font-medium text-sm mt-1">Status Anda: <span id="guru-mapel-name" class="font-black text-slate-900 dark:text-white underline decoration-primary-500 decoration-2"></span></p>
+                </div>
+                <div class="flex p-1 bg-white dark:bg-darkCard rounded-xl shadow-sm border border-slate-100 dark:border-slate-700 w-max">
+                    <button onclick="switchTabGuru('guru')" id="tab-btn-guru" class="px-5 py-2 rounded-lg bg-primary-600 text-white font-bold text-xs shadow-sm transition-all">Presensi Guru</button>
+                    <button onclick="switchTabGuru('kelas')" id="tab-btn-kelas" class="px-5 py-2 rounded-lg text-slate-500 dark:text-slate-400 font-bold text-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">Presensi Kelas</button>
+                </div>
             </div>
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                <div class="lg:col-span-1">
-                    <div class="bg-white dark:bg-darkCard p-6 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 space-y-5 lg:sticky lg:top-8">
-                        <h3 class="text-lg font-black dark:text-white border-b border-slate-100 dark:border-slate-700 pb-3">Informasi Sesi</h3>
-                        <div>
-                            <label class="block text-[10px] font-black uppercase text-slate-400 mb-2 ml-1">Tanggal</label>
-                            <input type="date" id="guru-date" readonly class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-sm font-semibold outline-none">
+
+            <!-- TAB PRESENSI GURU -->
+            <div id="tab-presensi-guru" class="animate-in">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 max-w-4xl mx-auto">
+                    <!-- Location Status Panel -->
+                    <div class="bg-white dark:bg-darkCard p-6 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700">
+                        <h3 class="text-lg font-black dark:text-white mb-4 border-b border-slate-100 dark:border-slate-700 pb-2">Lokasi & Absensi Anda</h3>
+                        
+                        <div id="location-status" class="p-6 bg-slate-50 dark:bg-slate-900/50 rounded-xl text-center border border-slate-100 dark:border-slate-700 mb-6 min-h-[140px] flex flex-col justify-center items-center">
+                            <i class="fas fa-spinner fa-spin text-primary-500 text-3xl mb-3"></i>
+                            <p class="font-bold text-sm text-slate-600 dark:text-slate-300">Mendeteksi lokasi...</p>
                         </div>
-                        <div>
-                            <label class="block text-[10px] font-black uppercase text-slate-400 mb-2 ml-1">Mata Pelajaran <span class="text-rose-500">*</span></label>
-                            <select id="guru-subject" onchange="checkGuruFormValidity()" class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 dark:text-white focus:border-primary-500 outline-none text-sm font-medium"><option value="">-- Pilih Mata Pelajaran --</option></select>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <button id="btn-absen-masuk" onclick="submitGuruAttendance('Masuk')" class="opacity-50 cursor-not-allowed bg-green-500 text-white font-black py-3.5 rounded-xl shadow-md transition-all active:scale-95 text-sm" disabled>
+                                <i class="fas fa-sign-in-alt mr-1"></i> MASUK
+                            </button>
+                            <button id="btn-absen-pulang" onclick="submitGuruAttendance('Pulang')" class="opacity-50 cursor-not-allowed bg-rose-500 text-white font-black py-3.5 rounded-xl shadow-md transition-all active:scale-95 text-sm" disabled>
+                                <i class="fas fa-sign-out-alt mr-1"></i> PULANG
+                            </button>
                         </div>
-                        <div>
-                            <label class="block text-[10px] font-black uppercase text-slate-400 mb-2 ml-1">Tujuan Kelas <span class="text-rose-500">*</span></label>
-                            <div id="guru-class-container" class="flex flex-wrap gap-2"></div>
-                            <input type="hidden" id="guru-class" value="">
+                        <div class="mt-4 flex justify-center">
+                            <button onclick="checkGuruLocation()" class="text-xs text-primary-500 hover:text-primary-600 font-bold"><i class="fas fa-sync-alt mr-1"></i> Perbarui Lokasi</button>
                         </div>
-                        <div>
-                            <label class="block text-[10px] font-black uppercase text-slate-400 mb-2 ml-1">Jam Pelajaran <span class="text-rose-500">*</span></label>
-                            <div class="grid grid-cols-8 gap-1.5" id="guru-period-buttons"></div>
-                            <input type="hidden" id="guru-period" value="">
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-black uppercase text-slate-400 mb-2 ml-1">Materi Pembelajaran <span class="text-rose-500">*</span></label>
-                            <textarea id="guru-material" oninput="checkGuruFormValidity()" rows="3" placeholder="Deskripsikan materi..." class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 dark:text-white focus:border-primary-500 outline-none text-sm font-medium"></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-black uppercase text-slate-400 mb-2 ml-1">Foto Kondisi Kelas <span class="text-rose-500">*</span></label>
-                            <input type="file" id="guru-photo" accept="image/*" class="hidden" onchange="handleGuruPhotoSelection(this)">
-                            <div id="guru-photo-dropzone" class="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-6 text-center hover:bg-slate-50 dark:hover:bg-slate-800/50 transition cursor-pointer" onclick="document.getElementById('guru-photo').click()" ondragover="handlePhotoDragOver(event)" ondragleave="handlePhotoDragLeave(event)" ondrop="handlePhotoDrop(event)">
-                                <i class="fas fa-cloud-upload-alt text-3xl text-slate-400 mb-3"></i>
-                                <p class="text-slate-600 dark:text-slate-300 font-bold text-xs">Klik atau seret foto ke sini</p>
-                                <p class="text-slate-400 text-[10px] mt-1">Format JPG, PNG</p>
+                    </div>
+
+                    <!-- History Panel -->
+                    <div class="bg-white dark:bg-darkCard p-6 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700">
+                        <h3 class="text-lg font-black dark:text-white mb-4 border-b border-slate-100 dark:border-slate-700 pb-2">Riwayat Hari Ini</h3>
+                        <p class="text-xs font-bold text-slate-400 mb-4 uppercase tracking-wider" id="guru-history-date"></p>
+                        <ul id="guru-own-attendance-list" class="space-y-3">
+                            <!-- Diisi oleh JS -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB PRESENSI KELAS -->
+            <div id="tab-presensi-kelas" class="hidden animate-in">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                    <div class="lg:col-span-1">
+                        <div class="bg-white dark:bg-darkCard p-6 rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 space-y-5 lg:sticky lg:top-8">
+                            <h3 class="text-lg font-black dark:text-white border-b border-slate-100 dark:border-slate-700 pb-3">Informasi Sesi</h3>
+                            <div>
+                                <label class="block text-[10px] font-black uppercase text-slate-400 mb-2 ml-1">Tanggal</label>
+                                <input type="date" id="guru-date" readonly class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 text-sm font-semibold outline-none">
                             </div>
-                            <div id="guru-photo-preview-container" class="hidden relative mt-2">
-                                <img id="guru-photo-preview" src="" alt="Preview" class="w-full h-32 object-cover rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                                <button type="button" onclick="clearGuruPhoto(event)" class="absolute top-2 right-2 bg-rose-500 text-white w-7 h-7 rounded-lg shadow-md hover:bg-rose-600 transition flex items-center justify-center"><i class="fas fa-times text-sm"></i></button>
-                                <div id="guru-photo-info" class="mt-2 text-[10px] font-bold text-slate-500 dark:text-slate-400 truncate text-center"></div>
+                            <div>
+                                <label class="block text-[10px] font-black uppercase text-slate-400 mb-2 ml-1">Mata Pelajaran <span class="text-rose-500">*</span></label>
+                                <select id="guru-subject" onchange="checkGuruFormValidity()" class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 dark:text-white focus:border-primary-500 outline-none text-sm font-medium"><option value="">-- Pilih Mata Pelajaran --</option></select>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black uppercase text-slate-400 mb-2 ml-1">Tujuan Kelas <span class="text-rose-500">*</span></label>
+                                <div id="guru-class-container" class="flex flex-wrap gap-2"></div>
+                                <input type="hidden" id="guru-class" value="">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black uppercase text-slate-400 mb-2 ml-1">Jam Pelajaran <span class="text-rose-500">*</span></label>
+                                <div class="grid grid-cols-8 gap-1.5" id="guru-period-buttons"></div>
+                                <input type="hidden" id="guru-period" value="">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black uppercase text-slate-400 mb-2 ml-1">Materi Pembelajaran <span class="text-rose-500">*</span></label>
+                                <textarea id="guru-material" oninput="checkGuruFormValidity()" rows="3" placeholder="Deskripsikan materi..." class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 dark:text-white focus:border-primary-500 outline-none text-sm font-medium"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] font-black uppercase text-slate-400 mb-2 ml-1">Foto Kondisi Kelas <span class="text-rose-500">*</span></label>
+                                <input type="file" id="guru-photo" accept="image/*" class="hidden" onchange="handleGuruPhotoSelection(this)">
+                                <div id="guru-photo-dropzone" class="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-6 text-center hover:bg-slate-50 dark:hover:bg-slate-800/50 transition cursor-pointer" onclick="document.getElementById('guru-photo').click()" ondragover="handlePhotoDragOver(event)" ondragleave="handlePhotoDragLeave(event)" ondrop="handlePhotoDrop(event)">
+                                    <i class="fas fa-cloud-upload-alt text-3xl text-slate-400 mb-3"></i>
+                                    <p class="text-slate-600 dark:text-slate-300 font-bold text-xs">Klik atau seret foto ke sini</p>
+                                    <p class="text-slate-400 text-[10px] mt-1">Format JPG, PNG</p>
+                                </div>
+                                <div id="guru-photo-preview-container" class="hidden relative mt-2">
+                                    <img id="guru-photo-preview" src="" alt="Preview" class="w-full h-32 object-cover rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                                    <button type="button" onclick="clearGuruPhoto(event)" class="absolute top-2 right-2 bg-rose-500 text-white w-7 h-7 rounded-lg shadow-md hover:bg-rose-600 transition flex items-center justify-center"><i class="fas fa-times text-sm"></i></button>
+                                    <div id="guru-photo-info" class="mt-2 text-[10px] font-bold text-slate-500 dark:text-slate-400 truncate text-center"></div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="lg:col-span-2">
-                    <div class="bg-white dark:bg-darkCard rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 overflow-hidden flex flex-col h-full lg:min-h-[80vh]">
-                        <div class="p-5 border-b dark:border-slate-700 flex justify-between items-center">
-                            <h3 class="text-lg font-black dark:text-white">Daftar Kehadiran</h3>
-                            <span class="text-[10px] font-bold text-slate-400">Default: Hadir</span>
-                        </div>
-                        <div class="flex-grow overflow-y-auto no-scrollbar" id="guru-students-container">
-                            <div id="guru-student-placeholder" class="h-full flex items-center justify-center p-10 text-slate-400 text-sm font-semibold text-center">Pilih kelas di panel kiri untuk memuat daftar siswa.</div>
-                            <ul id="guru-student-list" class="hidden divide-y dark:divide-slate-700/50"></ul>
-                        </div>
-                        <div class="p-5 bg-white dark:bg-darkCard border-t dark:border-slate-700">
-                            <p class="text-[10px] text-rose-500 font-bold mb-2 text-center hidden" id="guru-form-warning"><i class="fas fa-exclamation-circle"></i> Mohon lengkapi semua form di sebelah kiri.</p>
-                            <button onclick="submitAttendance()" id="btn-submit-attendance" class="w-full bg-primary-600 text-white font-black py-3.5 rounded-xl shadow-md text-sm transition-all opacity-50 cursor-not-allowed" disabled>SIMPAN ABSENSI</button>
+                    <div class="lg:col-span-2">
+                        <div class="bg-white dark:bg-darkCard rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 overflow-hidden flex flex-col h-full lg:min-h-[80vh]">
+                            <div class="p-5 border-b dark:border-slate-700 flex justify-between items-center">
+                                <h3 class="text-lg font-black dark:text-white">Daftar Kehadiran</h3>
+                                <span class="text-[10px] font-bold text-slate-400">Default: Hadir</span>
+                            </div>
+                            <div class="flex-grow overflow-y-auto no-scrollbar" id="guru-students-container">
+                                <div id="guru-student-placeholder" class="h-full flex items-center justify-center p-10 text-slate-400 text-sm font-semibold text-center">Pilih kelas di panel kiri untuk memuat daftar siswa.</div>
+                                <ul id="guru-student-list" class="hidden divide-y dark:divide-slate-700/50"></ul>
+                            </div>
+                            <div class="p-5 bg-white dark:bg-darkCard border-t dark:border-slate-700">
+                                <p class="text-[10px] text-rose-500 font-bold mb-2 text-center hidden" id="guru-form-warning"><i class="fas fa-exclamation-circle"></i> Mohon lengkapi semua form di sebelah kiri.</p>
+                                <button onclick="submitAttendance()" id="btn-submit-attendance" class="w-full bg-primary-600 text-white font-black py-3.5 rounded-xl shadow-md text-sm transition-all opacity-50 cursor-not-allowed" disabled>SIMPAN ABSENSI KELAS</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -120,10 +167,20 @@
 
     <script>
         const GOOGLE_MACRO_URL = localStorage.getItem('GOOGLE_MACRO_URL') || "";
-        let db = { users: [], subjects: [], students: [], attendance: [], classLogs: [] };
-        let currentUser = null, activeGuruAttendanceState = {}, currentGuruPhotoBase64 = '';
+        let db = { users: [], subjects: [], students: [], attendance: [], classLogs: [], attendanceGuru: [], settings: {} };
+        let currentUser = null, activeGuruAttendanceState = {}, currentGuruPhotoBase64 = '', currentDistance = null;
 
         const getTodayStr = () => { const tzoffset = (new Date()).getTimezoneOffset() * 60000; return (new Date(Date.now() - tzoffset)).toISOString().split('T')[0]; };
+
+        // Kalkulasi jarak Haversine (meter)
+        function getDistanceFromLatLonInM(lat1, lon1, lat2, lon2) {
+            const R = 6371e3; // Radius bumi dalam meter
+            const dLat = (lat2-lat1) * (Math.PI/180);
+            const dLon = (lon2-lon1) * (Math.PI/180);
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * (Math.PI/180)) * Math.cos(lat2 * (Math.PI/180)) * Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c; 
+        }
 
         function toggleTheme() {
             const html = document.documentElement; html.classList.toggle('dark');
@@ -135,7 +192,7 @@
         window.onload = async () => {
             currentUser = JSON.parse(sessionStorage.getItem('absensi_user'));
             if (!currentUser || currentUser.role !== 'guru') {
-                window.location.href = 'index.html'; // Usir jika bukan guru
+                window.location.href = 'index.html'; 
                 return;
             }
             
@@ -153,6 +210,9 @@
                 const result = await response.json();
                 db.subjects = (result.subjects || []).map(m => ({ ...m, id: String(m.id), name: m.name || m.Nama || 'Tanpa Nama' }));
                 db.students = (result.students || []).map(s => ({ ...s, id: String(s.id && s.id !== 'undefined' ? s.id : (s.nis || s.NIS || 's'+Math.random())), nis: String(s.nis || s.NIS || ''), name: s.name || s.Nama || s['Nama Lengkap'] || 'Siswa', class: s.class || s.Kelas || s.kelas || '' }));
+                if (result.settings) db.settings = result.settings;
+                if (result.attendanceGuru) db.attendanceGuru = result.attendanceGuru;
+                
                 localStorage.setItem('absensi_db', JSON.stringify(db));
                 setupGuruPanel();
             } catch (err) { console.error("Cloud sync fail:", err); }
@@ -160,6 +220,162 @@
 
         function logout() { sessionStorage.removeItem('absensi_user'); window.location.href = 'index.html'; }
 
+        // TABS LOGIC
+        function switchTabGuru(tab) {
+            const elGuru = document.getElementById('tab-presensi-guru');
+            const elKelas = document.getElementById('tab-presensi-kelas');
+            const btnGuru = document.getElementById('tab-btn-guru');
+            const btnKelas = document.getElementById('tab-btn-kelas');
+
+            if(tab === 'guru') {
+                elGuru.classList.remove('hidden'); elKelas.classList.add('hidden');
+                btnGuru.className = "px-5 py-2 rounded-lg bg-primary-600 text-white font-bold text-xs shadow-sm transition-all";
+                btnKelas.className = "px-5 py-2 rounded-lg text-slate-500 dark:text-slate-400 font-bold text-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-all";
+                checkGuruLocation();
+                renderOwnAttendance();
+            } else {
+                elKelas.classList.remove('hidden'); elGuru.classList.add('hidden');
+                btnKelas.className = "px-5 py-2 rounded-lg bg-primary-600 text-white font-bold text-xs shadow-sm transition-all";
+                btnGuru.className = "px-5 py-2 rounded-lg text-slate-500 dark:text-slate-400 font-bold text-xs hover:bg-slate-50 dark:hover:bg-slate-800 transition-all";
+            }
+        }
+
+        // --- FITUR PRESENSI GURU ---
+        function checkGuruLocation() {
+            const locStatus = document.getElementById('location-status');
+            const btnMasuk = document.getElementById('btn-absen-masuk');
+            const btnPulang = document.getElementById('btn-absen-pulang');
+            
+            btnMasuk.disabled = true; btnMasuk.classList.add('opacity-50', 'cursor-not-allowed');
+            btnPulang.disabled = true; btnPulang.classList.add('opacity-50', 'cursor-not-allowed');
+
+            if (!db.settings || !db.settings.lat || !db.settings.lng) {
+                locStatus.innerHTML = `<i class="fas fa-exclamation-circle text-rose-500 text-3xl mb-3"></i><p class="font-bold text-sm text-slate-700 dark:text-slate-300">Koordinat sekolah belum diatur Admin.</p>`;
+                return;
+            }
+
+            const schoolLat = parseFloat(db.settings.lat);
+            const schoolLng = parseFloat(db.settings.lng);
+
+            locStatus.innerHTML = `<i class="fas fa-location-arrow animate-pulse text-primary-500 text-3xl mb-3"></i><p class="font-bold text-sm text-slate-600 dark:text-slate-300">Mencari lokasi akurat Anda...</p>`;
+
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        currentDistance = getDistanceFromLatLonInM(lat, lng, schoolLat, schoolLng);
+                        
+                        if (currentDistance <= 10) {
+                            locStatus.innerHTML = `<i class="fas fa-check-circle text-green-500 text-3xl mb-3"></i><p class="font-bold text-sm text-slate-700 dark:text-slate-200">Anda berada di area sekolah.</p><p class="text-xs text-slate-500 mt-1">Jarak: ${currentDistance.toFixed(1)} meter</p>`;
+                            
+                            // Cek apakah sudah absen hari ini
+                            const today = getTodayStr();
+                            const myAtts = db.attendanceGuru ? db.attendanceGuru.filter(a => a.date === today && String(a.teacher_id) === String(currentUser.id)) : [];
+                            const hasMasuk = myAtts.some(a => a.type === 'Masuk');
+                            const hasPulang = myAtts.some(a => a.type === 'Pulang');
+
+                            if (!hasMasuk) {
+                                btnMasuk.disabled = false; btnMasuk.classList.remove('opacity-50', 'cursor-not-allowed');
+                                btnMasuk.innerHTML = '<i class="fas fa-sign-in-alt mr-1"></i> MASUK';
+                            } else {
+                                btnMasuk.innerHTML = '<i class="fas fa-check mr-1"></i> SUDAH MASUK';
+                            }
+
+                            if (hasMasuk && !hasPulang) {
+                                btnPulang.disabled = false; btnPulang.classList.remove('opacity-50', 'cursor-not-allowed');
+                                btnPulang.innerHTML = '<i class="fas fa-sign-out-alt mr-1"></i> PULANG';
+                            } else if (hasPulang) {
+                                btnPulang.innerHTML = '<i class="fas fa-check mr-1"></i> SUDAH PULANG';
+                            }
+                        } else {
+                            locStatus.innerHTML = `<i class="fas fa-times-circle text-rose-500 text-3xl mb-3"></i><p class="font-bold text-sm text-slate-700 dark:text-slate-200">Anda terlalu jauh dari sekolah.</p><p class="text-xs text-rose-500 mt-1 font-bold">Jarak: ${currentDistance.toFixed(1)}m (Maksimal 10m)</p>`;
+                        }
+                    },
+                    (error) => {
+                        let msg = "Gagal mengambil lokasi.";
+                        if (error.code === 1) msg = "Izin lokasi ditolak. Tolong izinkan di pengaturan browser.";
+                        locStatus.innerHTML = `<i class="fas fa-exclamation-triangle text-rose-500 text-3xl mb-3"></i><p class="font-bold text-sm text-slate-700 dark:text-slate-300">${msg}</p>`;
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                );
+            } else {
+                locStatus.innerHTML = `<p class="text-rose-500 font-bold text-sm">Browser tidak mendukung Geolocation.</p>`;
+            }
+        }
+
+        function renderOwnAttendance() {
+            document.getElementById('guru-history-date').textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+            const list = document.getElementById('guru-own-attendance-list');
+            const today = getTodayStr();
+            const myAtts = db.attendanceGuru ? db.attendanceGuru.filter(a => a.date === today && String(a.teacher_id) === String(currentUser.id)) : [];
+            
+            if (myAtts.length === 0) {
+                list.innerHTML = `<li class="text-center text-slate-400 text-xs py-8 font-semibold"><i class="fas fa-calendar-times block text-3xl mb-2 text-slate-300 dark:text-slate-700"></i>Belum ada rekaman absen hari ini.</li>`;
+            } else {
+                list.innerHTML = myAtts.map(a => {
+                    const isMasuk = a.type === 'Masuk';
+                    const icon = isMasuk ? '<i class="fas fa-sign-in-alt text-green-500"></i>' : '<i class="fas fa-sign-out-alt text-rose-500"></i>';
+                    return `<li class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 flex justify-between items-center"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg bg-white dark:bg-slate-900 flex items-center justify-center shadow-sm border border-slate-100 dark:border-slate-700">${icon}</div><div><span class="font-black text-sm dark:text-white block">Absen ${a.type}</span><span class="text-[10px] font-bold text-slate-400">Jarak: ${a.distance_m}m</span></div></div><div class="text-right"><span class="text-xs font-black text-slate-600 dark:text-slate-300 bg-slate-200/50 dark:bg-slate-700 px-3 py-1.5 rounded-lg">${a.time}</span></div></li>`;
+                }).join('');
+            }
+        }
+
+        async function submitGuruAttendance(type) {
+            if (currentDistance === null || currentDistance > 10) { 
+                showToast("Gagal: Jarak melebihi 10 meter atau lokasi tidak ditemukan!"); 
+                return; 
+            }
+            
+            const btn = document.getElementById('btn-absen-' + type.toLowerCase());
+            btn.disabled = true;
+            const oldText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> MENYIMPAN...';
+            
+            const today = getTodayStr();
+            const now = new Date();
+            const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0');
+            
+            const payload = {
+                id: 'AG' + Date.now() + Math.random().toString(36).substr(2,4),
+                date: today,
+                teacher_id: currentUser.id,
+                type: type,
+                time: timeStr,
+                distance_m: currentDistance.toFixed(2)
+            };
+
+            try {
+                const saveRes = await fetch(GOOGLE_MACRO_URL, { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ type: "saveGuruAttendance", data: payload }) 
+                }); 
+                
+                const saveText = await saveRes.text();
+                let resData;
+                try { resData = JSON.parse(saveText); } catch(e) { throw new Error("Format respons server salah."); }
+                if (resData.status === "error") throw new Error(resData.message);
+                
+                showToast(`Berhasil Absen ${type}!`);
+                
+                // Update Lokal Memori
+                if (!db.attendanceGuru) db.attendanceGuru = [];
+                db.attendanceGuru.push(payload);
+                localStorage.setItem('absensi_db', JSON.stringify(db));
+                
+                renderOwnAttendance();
+                checkGuruLocation(); // Tombol akan diperbarui otomatis
+
+            } catch(err) {
+                showToast("Error: " + err.message);
+                btn.innerHTML = oldText;
+                btn.disabled = false;
+            }
+        }
+
+
+        // --- FITUR PRESENSI KELAS ---
         function checkGuruFormValidity() {
             const cls = document.getElementById('guru-class').value, period = document.getElementById('guru-period').value, subject = document.getElementById('guru-subject').value, material = document.getElementById('guru-material').value.trim();
             const btn = document.getElementById('btn-submit-attendance'), warning = document.getElementById('guru-form-warning');
@@ -206,6 +422,9 @@
             
             if (classes.length > 0) { const first = document.querySelector(`input[name="g_class"][value="${classes[0]}"]`); if(first) { first.checked = true; document.getElementById('guru-class').value = classes[0]; } }
             loadStudentsForGuru(); checkGuruFormValidity();
+            
+            // Set Tab Default
+            switchTabGuru('guru');
         }
 
         function loadStudentsForGuru() {
@@ -237,7 +456,11 @@
                     const base64Data = currentGuruPhotoBase64.split(',')[1], formData = new URLSearchParams();
                     formData.append('filename', `Foto_${cls}_${date}_${Date.now()}.jpg`); formData.append('mimeType', 'image/jpeg'); formData.append('fileContent', base64Data);
                     const uploadRes = await fetch(GOOGLE_MACRO_URL, { method: 'POST', body: formData });
-                    const uploadData = await uploadRes.json();
+                    
+                    const uploadText = await uploadRes.text();
+                    let uploadData;
+                    try { uploadData = JSON.parse(uploadText); } catch(e) { throw new Error("Format respons upload salah."); }
+                    
                     if (uploadData.result === "success" || uploadData.status === "success") finalPhotoUrl = uploadData.url || "";
                     else throw new Error(uploadData.message || "Gagal mengunggah foto.");
                 }
@@ -250,15 +473,19 @@
                 const safeLog = toStringObj(log), safeAtts = atts.map(toStringObj);
 
                 const saveRes = await fetch(GOOGLE_MACRO_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ type: "saveAttendance", attendanceArr: safeAtts, logData: safeLog }) }); 
-                const saveDataParsed = await saveRes.json();
+                
+                const saveText = await saveRes.text();
+                let saveDataParsed;
+                try { saveDataParsed = JSON.parse(saveText); } catch(e) { throw new Error("Format respons simpan salah."); }
                 if (saveDataParsed.status === "error") throw new Error(saveDataParsed.message || "Gagal menyimpan.");
-                showToast("Absensi Berhasil Disimpan!"); 
+                
+                showToast("Absensi Kelas Berhasil Disimpan!"); 
                 
                 document.getElementById('guru-material').value = ''; document.getElementById('guru-period').value = '';
                 document.querySelectorAll('input[name="g_period"]').forEach(r => r.checked = false); clearGuruPhoto();
 
             } catch (e) { showToast(e.message); checkGuruFormValidity(); }
-            finally { btn.innerHTML = 'SIMPAN ABSENSI'; fetchInitialData(); }
+            finally { btn.innerHTML = 'SIMPAN ABSENSI KELAS'; fetchInitialData(); }
         }
 
         function showToast(m) { const t = document.getElementById('toast'), msg = document.getElementById('toast-message'); if (t && msg) { msg.textContent = m; t.classList.replace('translate-y-20', 'translate-y-0'); t.classList.replace('opacity-0', 'opacity-100'); t.classList.remove('pointer-events-none'); setTimeout(() => { t.classList.replace('translate-y-0', 'translate-y-20'); t.classList.replace('opacity-100', 'opacity-0'); t.classList.add('pointer-events-none'); }, 3000); } }
