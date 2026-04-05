@@ -441,10 +441,19 @@
                     photoUrl: finalPhotoUrl
                 };
 
+                // Mengonversi data ke format text murni dengan menambahkan awalan kutip (')
+                // Kecuali properti 'type' agar logika update/pencarian di Backend (Code.gs) tetap berjalan
+                const toStringObj = (obj) => Object.fromEntries(Object.entries(obj).map(([k, v]) => {
+                    if (k === 'type') return [k, v];
+                    let val = String(v || '');
+                    return [k, val.startsWith("'") ? val : "'" + val];
+                }));
+                const safePayload = toStringObj(payload);
+
                 const saveRes = await fetch(GOOGLE_MACRO_URL, { 
                     method: 'POST', 
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ type: "saveGuruAttendance", data: payload }) 
+                    body: JSON.stringify({ type: "saveGuruAttendance", data: safePayload }) 
                 }); 
                 
                 const saveText = await saveRes.text();
