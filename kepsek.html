@@ -71,7 +71,7 @@
                 <div class="flex flex-col md:flex-row gap-5 items-end text-slate-900 dark:text-white">
                     <div class="w-full md:w-56">
                         <label class="block text-[10px] font-black uppercase text-slate-400 mb-2 ml-1">Pilih Tanggal</label>
-                        <input type="date" id="filter-kepsek-date" class="w-full px-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-900/50 dark:text-white border border-slate-200 dark:border-slate-700 focus:border-primary-500 outline-none text-sm font-semibold" onchange="loadKepsekData()">
+                        <input type="date" id="filter-kepsek-date" class="w-full px-4 py-2 rounded-xl bg-slate-50 dark:bg-slate-900/50 dark:text-white border border-slate-200 dark:border-slate-700 focus:border-primary-500 outline-none text-sm font-semibold" onchange="currentKepsekRekapPage = 1; loadKepsekData()">
                     </div>
                     <div class="flex-grow">
                         <label class="block text-[10px] font-black uppercase text-slate-400 mb-2 ml-1">Filter Ruang Kelas</label>
@@ -81,7 +81,12 @@
                 </div>
             </div>
 
-            <div id="kepsek-tab-rekap" class="animate-in"><div id="kepsek-stats-container" class="mb-8"></div></div>
+            <div id="kepsek-tab-rekap" class="animate-in">
+                <div class="bg-white dark:bg-darkCard rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 overflow-hidden mb-6">
+                    <div id="kepsek-stats-container" class="overflow-x-auto no-scrollbar"></div>
+                    <div id="pagination-kepsek-rekap" class="p-5 border-t dark:border-slate-700 flex flex-col sm:flex-row justify-between items-center gap-4 text-slate-400"></div>
+                </div>
+            </div>
 
             <div id="kepsek-tab-jurnal" class="hidden animate-in">
                 <div class="bg-white dark:bg-darkCard rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 overflow-hidden">
@@ -171,7 +176,7 @@
     <script>
         const GOOGLE_MACRO_URL = localStorage.getItem('GOOGLE_MACRO_URL') || "https://script.google.com/macros/s/AKfycbzaxciHd1EHF368DFD0Sv0Gmk-1QnSsl-ffEbuOEr08OVnKVbbx5cnsLXkiYzAJcI7hlw/exec"; 
         let db = { users: [], subjects: [], students: [], attendance: [], classLogs: [], attendanceGuru: [] };
-        let currentUser = null, currentHistoryStudentId = null, currentKepsekStudentPage = 1, currentKepsekGuruPage = 1, studentsPerPage = 20, guruPerPage = 20;
+        let currentUser = null, currentHistoryStudentId = null, currentKepsekStudentPage = 1, currentKepsekGuruPage = 1, currentKepsekRekapPage = 1, studentsPerPage = 20, guruPerPage = 20;
 
         const getTodayStr = () => { const tzoffset = (new Date()).getTimezoneOffset() * 60000; return (new Date(Date.now() - tzoffset)).toISOString().split('T')[0]; };
         const extractDate = (dateVal) => { if (!dateVal) return ''; let d = String(dateVal); return d.includes('T') ? d.split('T')[0] : d.trim(); };
@@ -226,6 +231,8 @@
             loadKepsekData(); 
         }
 
+        function changeKepsekRekapPage(p) { currentKepsekRekapPage = p; loadKepsekData(); }
+
         function loadKepsekData() {
             const dateInput = document.getElementById('filter-kepsek-date'); if (!dateInput.value) dateInput.value = getTodayStr(); const dateVal = dateInput.value;
             const cls = document.getElementById('filter-kepsek-class').value, container = document.getElementById('kepsek-class-container');
@@ -239,11 +246,19 @@
             let targetStudents = db.students; if (cls !== 'ALL') targetStudents = targetStudents.filter(s => s.class === cls); 
             targetStudents.sort((a,b) => { if(a.class === b.class) return a.name.localeCompare(b.name); return a.class.localeCompare(b.class); });
 
-            let statsHTML = `<div class="bg-white dark:bg-darkCard rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 overflow-hidden"><div class="overflow-x-auto no-scrollbar"><table class="w-full text-left whitespace-nowrap min-w-[800px]"><thead class="bg-slate-50/50 dark:bg-slate-800/80 text-[10px] font-black uppercase text-slate-400"><tr><th rowspan="2" class="px-5 py-3 border-b border-r dark:border-slate-700 w-12 text-center align-middle">No</th><th rowspan="2" class="px-5 py-3 border-b border-r dark:border-slate-700 align-middle">Nama Siswa</th><th rowspan="2" class="px-5 py-3 border-b border-r dark:border-slate-700 text-center align-middle">Kelas</th><th colspan="8" class="px-5 py-2 border-b dark:border-slate-700 text-center">Hadir Jam Ke-</th></tr><tr>${[1,2,3,4,5,6,7,8].map(p => `<th class="px-3 py-2 border-b border-l dark:border-slate-700 text-center w-10">${p}</th>`).join('')}</tr></thead><tbody class="divide-y dark:divide-slate-700/50 dark:text-white text-xs">`;
-            if (targetStudents.length === 0) statsHTML += `<tr><td colspan="11" class="py-16 text-center text-slate-300 font-bold text-sm">Tidak ada data siswa.</td></tr>`;
+            // PAGINATION UNTUK REKAP 1-8
+            const totalRekap = targetStudents.length;
+            const pagesRekap = Math.ceil(totalRekap / studentsPerPage);
+            currentKepsekRekapPage = Math.max(1, Math.min(currentKepsekRekapPage, pagesRekap || 1));
+            const paginatedStudents = targetStudents.slice((currentKepsekRekapPage - 1) * studentsPerPage, currentKepsekRekapPage * studentsPerPage);
+
+            let statsHTML = `<table class="w-full text-left whitespace-nowrap min-w-[800px]"><thead class="bg-slate-50/50 dark:bg-slate-800/80 text-[10px] font-black uppercase text-slate-400"><tr><th rowspan="2" class="px-5 py-3 border-b border-r dark:border-slate-700 w-12 text-center align-middle">No</th><th rowspan="2" class="px-5 py-3 border-b border-r dark:border-slate-700 align-middle w-24">NIS</th><th rowspan="2" class="px-5 py-3 border-b border-r dark:border-slate-700 align-middle">Nama Siswa</th><th rowspan="2" class="px-5 py-3 border-b border-r dark:border-slate-700 text-center align-middle">Kelas</th><th colspan="8" class="px-5 py-2 border-b dark:border-slate-700 text-center">Hadir Jam Ke-</th></tr><tr>${[1,2,3,4,5,6,7,8].map(p => `<th class="px-3 py-2 border-b border-l dark:border-slate-700 text-center w-10">${p}</th>`).join('')}</tr></thead><tbody class="divide-y dark:divide-slate-700/50 dark:text-white text-xs">`;
+            
+            if (paginatedStudents.length === 0) statsHTML += `<tr><td colspan="12" class="py-16 text-center text-slate-300 font-bold text-sm">Tidak ada data siswa.</td></tr>`;
             else {
-                targetStudents.forEach((s, index) => {
-                    statsHTML += `<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors"><td class="px-5 py-3 text-center border-r dark:border-slate-700/50 text-slate-400 font-bold">${index + 1}</td><td class="px-5 py-3 border-r dark:border-slate-700/50 font-bold text-sm">${s.name}</td><td class="px-5 py-3 border-r dark:border-slate-700/50 text-center text-xs font-bold text-primary-600">${s.class}</td>`;
+                paginatedStudents.forEach((s, index) => {
+                    const actualIdx = (currentKepsekRekapPage - 1) * studentsPerPage + index + 1;
+                    statsHTML += `<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors"><td class="px-5 py-3 text-center border-r dark:border-slate-700/50 text-slate-400 font-bold">${actualIdx}</td><td class="px-5 py-3 border-r dark:border-slate-700/50 font-bold text-slate-500 dark:text-slate-400">${s.nis}</td><td class="px-5 py-3 border-r dark:border-slate-700/50 font-bold text-sm">${s.name}</td><td class="px-5 py-3 border-r dark:border-slate-700/50 text-center text-xs font-bold text-primary-600">${s.class}</td>`;
                     for(let i=1; i<=8; i++) {
                         const att = filtered.find(a => String(a.student_id) === String(s.id) && String(a.period) === String(i));
                         let cellContent = '-', cellClass = 'bg-slate-100 dark:bg-slate-800 text-slate-300 dark:text-slate-600'; 
@@ -251,8 +266,13 @@
                         statsHTML += `<td class="px-2 py-3 text-center border-l dark:border-slate-700/50"><div class="w-6 h-6 mx-auto rounded-md flex items-center justify-center text-[10px] ${cellClass}">${cellContent}</div></td>`;
                     } statsHTML += `</tr>`;
                 });
-            } statsHTML += `</tbody></table></div></div>`;
+            } statsHTML += `</tbody></table>`;
             document.getElementById('kepsek-stats-container').innerHTML = statsHTML;
+
+            const pagContainerRekap = document.getElementById('pagination-kepsek-rekap');
+            if (pagContainerRekap) {
+                pagContainerRekap.innerHTML = `<span class="text-xs font-bold text-slate-400">${totalRekap} Siswa</span><div class="flex gap-1">` + Array.from({length: pagesRekap}, (_, i) => i + 1).filter(p => p === 1 || p === pagesRekap || Math.abs(p - currentKepsekRekapPage) <= 1).map(p => `<button onclick="changeKepsekRekapPage(${p})" class="w-7 h-7 rounded-md font-bold text-xs ${p===currentKepsekRekapPage ? 'bg-primary-600 text-white' : 'bg-slate-100 dark:bg-slate-800 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'}">${p}</button>`).join('') + `</div>`;
+            }
             
             let logs = db.classLogs.filter(l => l.date === dateVal && (cls === 'ALL' || l.class === cls));
             const tableLogs = document.getElementById('table-kepsek-logs');
@@ -403,7 +423,7 @@
             openModal('modal-photo-viewer');
         }
 
-        function setKepsekClass(c) { document.getElementById('filter-kepsek-class').value = c; document.getElementById('kepsek-class-container').dataset.populated = ''; loadKepsekData(); if (!document.getElementById('kepsek-tab-siswa').classList.contains('hidden')) { currentKepsekStudentPage = 1; loadKepsekStudents(); } }
+        function setKepsekClass(c) { document.getElementById('filter-kepsek-class').value = c; document.getElementById('kepsek-class-container').dataset.populated = ''; currentKepsekRekapPage = 1; loadKepsekData(); if (!document.getElementById('kepsek-tab-siswa').classList.contains('hidden')) { currentKepsekStudentPage = 1; loadKepsekStudents(); } }
         async function manualRefresh(btn) { const org = btn.innerHTML; btn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Memuat...'; btn.disabled = true; await fetchInitialData(); btn.innerHTML = org; btn.disabled = false; showToast("Data ter-update!"); }
         function showToast(m) { const t = document.getElementById('toast'), msg = document.getElementById('toast-message'); if (t && msg) { msg.textContent = m; t.classList.replace('translate-y-20', 'translate-y-0'); t.classList.replace('opacity-0', 'opacity-100'); t.classList.remove('pointer-events-none'); setTimeout(() => { t.classList.replace('translate-y-0', 'translate-y-20'); t.classList.replace('opacity-100', 'opacity-0'); t.classList.add('pointer-events-none'); }, 3000); } }
     </script>
