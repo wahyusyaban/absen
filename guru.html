@@ -177,6 +177,14 @@
                 </div>
             </div>
         </section>
+
+        <!-- Photo Viewer Modal -->
+        <div id="modal-photo-viewer" class="fixed inset-0 bg-slate-900/90 z-[120] hidden flex items-center justify-center backdrop-blur-sm transition-all duration-300 opacity-0 p-4" onclick="closeModal('modal-photo-viewer')">
+            <div class="relative max-w-4xl w-full flex justify-center" onclick="event.stopPropagation()">
+                <img id="large-photo-img" src="" class="max-h-[85vh] rounded-lg shadow-2xl object-contain bg-white dark:bg-darkCard">
+                <button onclick="closeModal('modal-photo-viewer')" class="absolute -top-4 -right-4 w-10 h-10 bg-rose-500 text-white rounded-full flex items-center justify-center hover:bg-rose-600 shadow-lg border-2 border-white dark:border-slate-800 transition-transform active:scale-95"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
     </main>
 
     <script>
@@ -200,6 +208,20 @@
             localStorage.setItem('theme', html.classList.contains('dark') ? 'dark' : 'light');
             const icon = document.getElementById('theme-icon');
             if(icon) { if(html.classList.contains('dark')) icon.classList.replace('fa-moon', 'fa-sun'); else icon.classList.replace('fa-sun', 'fa-moon'); }
+        }
+
+        // Modal Handlers
+        function openModal(id) { const m = document.getElementById(id); if(m) { m.classList.remove('hidden'); setTimeout(() => m.classList.replace('opacity-0', 'opacity-100'), 10); } }
+        function closeModal(id) { const m = document.getElementById(id); if(m) { m.classList.replace('opacity-100', 'opacity-0'); setTimeout(() => m.classList.add('hidden'), 300); } }
+
+        function openPhotoViewer(url) {
+            let finalUrl = url;
+            const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+            if (match && match[1]) {
+                finalUrl = `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000`;
+            }
+            document.getElementById('large-photo-img').src = finalUrl;
+            openModal('modal-photo-viewer');
         }
 
         window.onload = async () => {
@@ -384,11 +406,11 @@
             } else {
                 if (myAtt.time_masuk) {
                     const thumbUrl = getThumb(myAtt.photo_masuk);
-                    html += `<li class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 flex justify-between items-center"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg bg-white dark:bg-slate-900 flex items-center justify-center shadow-sm border border-slate-100 dark:border-slate-700"><i class="fas fa-sign-in-alt text-green-500"></i></div><div><span class="font-black text-sm dark:text-white block">Absen Masuk</span><span class="text-[10px] font-bold text-slate-400">Jarak: ${myAtt.distance_masuk_m}m</span></div></div><div class="text-right flex items-center gap-3">${myAtt.photo_masuk ? `<a href="${myAtt.photo_masuk}" target="_blank"><img src="${thumbUrl}" class="w-8 h-8 rounded-md object-cover border border-slate-200 hover:scale-110 transition-transform"></a>` : ''}<span class="text-xs font-black text-slate-600 dark:text-slate-300 bg-slate-200/50 dark:bg-slate-700 px-3 py-1.5 rounded-lg">${myAtt.time_masuk}</span></div></li>`;
+                    html += `<li class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 flex justify-between items-center"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg bg-white dark:bg-slate-900 flex items-center justify-center shadow-sm border border-slate-100 dark:border-slate-700"><i class="fas fa-sign-in-alt text-green-500"></i></div><div><span class="font-black text-sm dark:text-white block">Absen Masuk</span><span class="text-[10px] font-bold text-slate-400">Jarak: ${myAtt.distance_masuk_m}m</span></div></div><div class="text-right flex items-center gap-3">${myAtt.photo_masuk ? `<img src="${thumbUrl}" onclick="openPhotoViewer('${myAtt.photo_masuk}')" class="w-8 h-8 rounded-md object-cover border border-slate-200 hover:scale-110 transition-transform cursor-pointer" title="Lihat Foto">` : ''}<span class="text-xs font-black text-slate-600 dark:text-slate-300 bg-slate-200/50 dark:bg-slate-700 px-3 py-1.5 rounded-lg">${myAtt.time_masuk}</span></div></li>`;
                 }
                 if (myAtt.time_pulang) {
                     const thumbUrl = getThumb(myAtt.photo_pulang);
-                    html += `<li class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 flex justify-between items-center"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg bg-white dark:bg-slate-900 flex items-center justify-center shadow-sm border border-slate-100 dark:border-slate-700"><i class="fas fa-sign-out-alt text-rose-500"></i></div><div><span class="font-black text-sm dark:text-white block">Absen Pulang</span><span class="text-[10px] font-bold text-slate-400">Jarak: ${myAtt.distance_pulang_m}m</span></div></div><div class="text-right flex items-center gap-3">${myAtt.photo_pulang ? `<a href="${myAtt.photo_pulang}" target="_blank"><img src="${thumbUrl}" class="w-8 h-8 rounded-md object-cover border border-slate-200 hover:scale-110 transition-transform"></a>` : ''}<span class="text-xs font-black text-slate-600 dark:text-slate-300 bg-slate-200/50 dark:bg-slate-700 px-3 py-1.5 rounded-lg">${myAtt.time_pulang}</span></div></li>`;
+                    html += `<li class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700 flex justify-between items-center"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-lg bg-white dark:bg-slate-900 flex items-center justify-center shadow-sm border border-slate-100 dark:border-slate-700"><i class="fas fa-sign-out-alt text-rose-500"></i></div><div><span class="font-black text-sm dark:text-white block">Absen Pulang</span><span class="text-[10px] font-bold text-slate-400">Jarak: ${myAtt.distance_pulang_m}m</span></div></div><div class="text-right flex items-center gap-3">${myAtt.photo_pulang ? `<img src="${thumbUrl}" onclick="openPhotoViewer('${myAtt.photo_pulang}')" class="w-8 h-8 rounded-md object-cover border border-slate-200 hover:scale-110 transition-transform cursor-pointer" title="Lihat Foto">` : ''}<span class="text-xs font-black text-slate-600 dark:text-slate-300 bg-slate-200/50 dark:bg-slate-700 px-3 py-1.5 rounded-lg">${myAtt.time_pulang}</span></div></li>`;
                 }
             }
             list.innerHTML = html;
