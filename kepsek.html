@@ -24,8 +24,8 @@
         .bottom-nav-shadow { box-shadow: 0 -4px 20px -5px rgba(0, 0, 0, 0.1); }
         
         /* Fix for icon disappearance on hover */
-        .nav-btn i { transition: transform 0.2s ease; }
-        .nav-btn:hover i { transform: scale(1.1); color: inherit; }
+        .nav-btn i { transition: transform 0.2s ease; display: inline-block; }
+        .nav-btn:hover i { transform: scale(1.1); }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 dark:bg-darkBg dark:text-slate-100 min-h-screen flex flex-col">
@@ -156,7 +156,7 @@
             </div>
         </section>
 
-        <!-- Modal Download Rekap Excel (Hanya Excel) -->
+        <!-- Modal Download Rekap Excel -->
         <div id="modal-download-rekap" class="fixed inset-0 bg-slate-900/60 z-[120] hidden flex items-center justify-center backdrop-blur-sm transition-all duration-300 opacity-0 p-4">
             <div class="bg-white dark:bg-darkCard rounded-2xl p-6 w-full max-w-sm shadow-2xl dark:text-white border dark:border-slate-700">
                 <div class="w-12 h-12 bg-green-100 dark:bg-green-900/40 text-green-600 rounded-xl flex items-center justify-center mb-4"><i class="fas fa-file-excel text-xl"></i></div>
@@ -441,7 +441,7 @@
             }).join('') : `<tr><td colspan="5" class="py-16 text-center text-slate-300 font-bold text-sm">Belum ada aktivitas tercatat.</td></tr>`;
         }
 
-        // --- Logika Unduh EXCEL & PDF Rekap Absensi Siswa ---
+        // --- Logika Unduh EXCEL Rekap Absensi Siswa ---
         function openDownloadModal() {
             const clsSelect = document.getElementById('dl-class');
             const monthSelect = document.getElementById('dl-month');
