@@ -57,16 +57,17 @@
                     <p class="text-slate-400 font-medium text-sm">Kelola data master sekolah.</p>
                 </div>
                 <div class="flex flex-wrap gap-2">
-                    <button onclick="manualRefresh(this)" class="px-4 py-2 rounded-xl bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-700 font-bold text-xs shadow-sm flex items-center gap-1.5 dark:text-white transition-all hover:bg-slate-50"><i class="fas fa-sync-alt"></i> Refresh</button>
+                    <button onclick="manualRefresh(this)" class="px-4 py-2 rounded-xl bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-700 font-bold text-xs shadow-sm flex items-center gap-1.5 dark:text-white transition-all hover:bg-slate-50 dark:hover:bg-slate-800"><i class="fas fa-sync-alt"></i> Refresh</button>
                     <div class="p-1 bg-slate-200/50 dark:bg-slate-800 rounded-xl flex gap-1">
-                        <button onclick="switchAdminTab('murid')" id="tab-murid" class="px-4 py-1.5 rounded-lg bg-white dark:bg-darkCard dark:text-white shadow-sm font-bold text-xs">Siswa</button>
-                        <button onclick="switchAdminTab('guru')" id="tab-guru" class="px-4 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 font-bold text-xs">Guru</button>
-                        <button onclick="switchAdminTab('mapel')" id="tab-mapel" class="px-4 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 font-bold text-xs">Mapel</button>
-                        <button onclick="switchAdminTab('setting')" id="tab-setting" class="px-4 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 font-bold text-xs">Pengaturan</button>
+                        <button onclick="switchAdminTab('murid')" id="tab-murid" class="px-4 py-1.5 rounded-lg bg-white dark:bg-darkCard dark:text-white shadow-sm font-bold text-xs transition-all">Siswa</button>
+                        <button onclick="switchAdminTab('guru')" id="tab-guru" class="px-4 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 font-bold text-xs transition-all hover:bg-white/50 dark:hover:bg-slate-700/50">Guru</button>
+                        <button onclick="switchAdminTab('mapel')" id="tab-mapel" class="px-4 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 font-bold text-xs transition-all hover:bg-white/50 dark:hover:bg-slate-700/50">Mapel</button>
+                        <button onclick="switchAdminTab('setting')" id="tab-setting" class="px-4 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 font-bold text-xs transition-all hover:bg-white/50 dark:hover:bg-slate-700/50">Pengaturan</button>
                     </div>
                 </div>
             </div>
 
+            <!-- Tab Siswa -->
             <div id="admin-murid" class="animate-in">
                 <div class="bg-white dark:bg-darkCard rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 overflow-hidden">
                     <div class="p-5 border-b dark:border-slate-700 flex flex-col md:flex-row justify-between gap-4">
@@ -93,6 +94,7 @@
                 </div>
             </div>
 
+            <!-- Tab Guru -->
             <div id="admin-guru" class="hidden animate-in">
                 <div class="bg-white dark:bg-darkCard rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 overflow-hidden">
                     <div class="p-5 border-b dark:border-slate-700 flex justify-between items-center dark:text-white">
@@ -110,6 +112,7 @@
                 </div>
             </div>
 
+            <!-- Tab Mapel -->
             <div id="admin-mapel" class="hidden animate-in">
                 <div class="bg-white dark:bg-darkCard rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 overflow-hidden p-6">
                     <div class="flex justify-between items-center mb-6 dark:text-white">
@@ -120,44 +123,69 @@
                 </div>
             </div>
 
+            <!-- Tab Setting -->
             <div id="admin-setting" class="hidden animate-in">
                 <div class="bg-white dark:bg-darkCard rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 p-6 space-y-6">
                     <div class="dark:text-white border-b border-slate-100 dark:border-slate-700 pb-4">
                         <h3 class="text-lg font-black">Pengaturan Sistem</h3>
-                        <p class="text-xs font-medium text-slate-500 mt-1">Atur koordinat lokasi sekolah dan jam operasional absensi.</p>
+                        <p class="text-xs font-medium text-slate-500 mt-1">Atur koordinat lokasi, jam operasional absensi, dan kop surat.</p>
                     </div>
                     
-                    <form id="setting-form" onsubmit="event.preventDefault(); saveSettings();" class="space-y-5">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    <form id="setting-form" onsubmit="event.preventDefault(); saveSettings();" class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Setting Lokasi -->
                             <div class="space-y-3">
                                 <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">Koordinat Lokasi (Latitude, Longitude)</label>
                                 <div class="flex gap-2">
-                                    <input type="text" id="setting-lat" placeholder="Latitude" class="w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:border-primary-500 text-sm dark:text-white">
-                                    <input type="text" id="setting-lng" placeholder="Longitude" class="w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:border-primary-500 text-sm dark:text-white">
+                                    <input type="text" id="setting-lat" placeholder="Latitude" class="w-full px-4 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:border-primary-500 text-sm dark:text-white font-medium">
+                                    <input type="text" id="setting-lng" placeholder="Longitude" class="w-full px-4 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:border-primary-500 text-sm dark:text-white font-medium">
                                 </div>
-                                <button type="button" onclick="getLocation()" class="text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold px-3 py-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition flex items-center gap-1.5 w-max">
+                                <button type="button" onclick="getLocation()" class="text-xs bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold px-4 py-2.5 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition flex items-center gap-2 w-max">
                                     <i class="fas fa-map-marker-alt text-primary-500"></i> Ambil dari Device Ini
                                 </button>
                                 <p class="text-[10px] text-slate-400">Pastikan Anda berada di lokasi sekolah saat mengambil koordinat.</p>
                             </div>
                             
+                            <!-- Setting Jam -->
                             <div class="space-y-3">
                                 <label class="block text-xs font-bold text-slate-700 dark:text-slate-300">Jam Operasional Absensi</label>
                                 <div class="flex gap-4">
                                     <div class="flex-1">
                                         <label class="block text-[10px] text-slate-500 mb-1">Jam Masuk</label>
-                                        <input type="time" id="setting-masuk" class="w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:border-primary-500 text-sm dark:text-white">
+                                        <input type="time" id="setting-masuk" class="w-full px-4 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:border-primary-500 text-sm dark:text-white font-medium">
                                     </div>
                                     <div class="flex-1">
                                         <label class="block text-[10px] text-slate-500 mb-1">Jam Pulang</label>
-                                        <input type="time" id="setting-pulang" class="w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:border-primary-500 text-sm dark:text-white">
+                                        <input type="time" id="setting-pulang" class="w-full px-4 py-2.5 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:border-primary-500 text-sm dark:text-white font-medium">
                                     </div>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Upload Kop Surat -->
+                        <div class="pt-5 border-t border-slate-100 dark:border-slate-700">
+                            <label class="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-3">Kop Surat (Untuk Cetak Laporan Rekap)</label>
+                            
+                            <input type="file" id="kop-photo" accept="image/*" class="hidden" onchange="handleKopSelection(this)">
+                            
+                            <div id="kop-dropzone" class="border-2 border-dashed border-slate-300 dark:border-slate-600 rounded-xl p-8 text-center hover:bg-slate-50 dark:hover:bg-slate-800/50 transition cursor-pointer" onclick="document.getElementById('kop-photo').click()">
+                                <i class="fas fa-image text-3xl text-slate-400 mb-3"></i>
+                                <p class="text-slate-600 dark:text-slate-300 font-bold text-sm">Pilih Gambar Kop Surat</p>
+                                <p class="text-slate-400 text-[10px] mt-1">Mendukung format JPG / PNG. Desain memanjang direkomendasikan.</p>
+                            </div>
+
+                            <div id="kop-preview-container" class="hidden relative mt-2 w-full flex items-center justify-center bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                                <img id="kop-preview" src="" alt="Preview Kop Surat" class="max-w-full max-h-40 object-contain drop-shadow-sm">
+                                <button type="button" onclick="clearKop(event)" class="absolute top-3 right-3 bg-rose-500 text-white w-8 h-8 rounded-lg shadow-md hover:bg-rose-600 transition flex items-center justify-center" title="Hapus Kop">
+                                    <i class="fas fa-trash-alt text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
                         
-                        <div class="pt-4 border-t border-slate-100 dark:border-slate-700 flex justify-end">
-                            <button type="submit" class="bg-primary-600 hover:bg-primary-700 text-white font-bold px-6 py-2.5 rounded-xl shadow-md transition-all active:scale-95 text-sm">Simpan Pengaturan</button>
+                        <div class="pt-5 border-t border-slate-100 dark:border-slate-700 flex justify-end">
+                            <button type="submit" class="bg-primary-600 hover:bg-primary-700 text-white font-bold px-6 py-3 rounded-xl shadow-md transition-all active:scale-95 text-sm flex items-center gap-2">
+                                <i class="fas fa-save"></i> Simpan Pengaturan
+                            </button>
                         </div>
                     </form>
                 </div>
@@ -212,9 +240,10 @@
 
     <script>
         const GOOGLE_MACRO_URL = localStorage.getItem('GOOGLE_MACRO_URL') || "";
-        let db = { users: [], subjects: [], students: [], attendance: [], classLogs: [], settings: { lat: '', lng: '', jamMasuk: '07:00', jamPulang: '14:00' } };
+        let db = { users: [], subjects: [], students: [], attendance: [], classLogs: [], settings: { lat: '', lng: '', jamMasuk: '07:00', jamPulang: '14:00', kopSurat: '' } };
         let currentUser = null;
         let currentStudentPage = 1, studentsPerPage = 20, currentEditId = null, itemToDelete = null;
+        let currentKopBase64 = ''; // Penyimpan sementara Kop Surat di memori saat dipilih
 
         function toggleTheme() {
             const html = document.documentElement; html.classList.toggle('dark');
@@ -247,13 +276,12 @@
                 db.subjects = (result.subjects || []).map(m => ({ ...m, id: String(m.id), name: m.name || m.Nama || 'Tanpa Nama' }));
                 db.students = (result.students || []).map(s => ({ ...s, id: String(s.id && s.id !== 'undefined' ? s.id : (s.nis || s.NIS || 's'+Math.random())), nis: String(s.nis || s.NIS || ''), name: s.name || s.Nama || s['Nama Lengkap'] || 'Siswa', class: s.class || s.Kelas || s.kelas || '' }));
                 
-                // Menggabungkan data pengaturan dari database
                 if (result.settings && Object.keys(result.settings).length > 0) {
                     db.settings = { ...db.settings, ...result.settings };
                 }
                 
                 localStorage.setItem('absensi_db', JSON.stringify(db));
-                loadAdminData(); // Memastikan form input di-update ulang dari data terbaru
+                loadAdminData();
             } catch (err) { 
                 console.error("Cloud sync fail:", err); 
             }
@@ -290,19 +318,32 @@
             const selMapel = getEl('teacher-mapel');
             if (selMapel) selMapel.innerHTML = '<option value="">-- Pilih Mata Pelajaran --</option>' + db.subjects.map(m => `<option value="${m.id}">${m.name}</option>`).join('');
 
-            // Menampilkan nilai pengaturan yang diambil dari database (atau fallback default)
+            // Data Settings
             if (db.settings) {
-                const elLat = getEl('setting-lat');
-                if (elLat) elLat.value = db.settings.lat || '';
+                const elLat = getEl('setting-lat'); if (elLat) elLat.value = db.settings.lat || '';
+                const elLng = getEl('setting-lng'); if (elLng) elLng.value = db.settings.lng || '';
+                const elMasuk = getEl('setting-masuk'); if (elMasuk) elMasuk.value = db.settings.jamMasuk || '07:00';
+                const elPulang = getEl('setting-pulang'); if (elPulang) elPulang.value = db.settings.jamPulang || '14:00';
                 
-                const elLng = getEl('setting-lng');
-                if (elLng) elLng.value = db.settings.lng || '';
-                
-                const elMasuk = getEl('setting-masuk');
-                if (elMasuk) elMasuk.value = db.settings.jamMasuk || '07:00';
-                
-                const elPulang = getEl('setting-pulang');
-                if (elPulang) elPulang.value = db.settings.jamPulang || '14:00';
+                // Menampilkan Kop Surat jika sudah ada di database
+                const kopPreview = getEl('kop-preview');
+                const kopDropzone = getEl('kop-dropzone');
+                const kopContainer = getEl('kop-preview-container');
+
+                if (db.settings.kopSurat && db.settings.kopSurat.length > 5) {
+                    let displayUrl = db.settings.kopSurat.replace(/^'/, '');
+                    if (displayUrl.includes('drive.google.com/file/d/')) {
+                         const match = displayUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
+                         if (match && match[1]) displayUrl = `https://drive.google.com/uc?export=view&id=${match[1]}`;
+                    }
+                    kopPreview.src = displayUrl;
+                    kopDropzone.classList.add('hidden');
+                    kopContainer.classList.remove('hidden');
+                } else {
+                    kopPreview.src = '';
+                    kopDropzone.classList.remove('hidden');
+                    kopContainer.classList.add('hidden');
+                }
             }
         }
 
@@ -340,16 +381,15 @@
             closeModal('modal-confirm'); itemToDelete = null; loadAdminData(); await syncAdminData(); 
         }
 
-        async function syncAdminData() {
+        async function syncAdminData(silent = false) {
             localStorage.setItem('absensi_db', JSON.stringify(db));
             const toStringObj = (obj) => Object.fromEntries(Object.entries(obj).map(([k, v]) => { let val = String(v || ''); return [k, val.startsWith("'") ? val : "'" + val]; }));
             const safeUsers = db.users.map(toStringObj), safeSubjects = db.subjects.map(toStringObj), safeStudents = db.students.map(toStringObj);
             
-            // Konversi settings agar aman untuk payload API (semua dijadikan string)
             const safeSettings = db.settings ? toStringObj(db.settings) : {};
 
             try { 
-                showToast("Sinkronisasi..."); 
+                if(!silent) showToast("Sinkronisasi..."); 
                 await fetch(GOOGLE_MACRO_URL, { 
                     method: 'POST', 
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' }, 
@@ -361,9 +401,10 @@
                         settings: safeSettings 
                     }) 
                 }); 
-                showToast("Sinkron sukses!"); 
+                if(!silent) showToast("Sinkron sukses!"); 
             } catch (e) { 
                 showToast("Sinkronisasi gagal."); 
+                throw e; // Lemparkan error agar ditangkap oleh pemanggil
             }
         }
 
@@ -384,27 +425,94 @@
             }
         }
 
+        // --- Logika Gambar Kop Surat ---
+        function handleKopSelection(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 1200; // Resolusi cukup besar untuk kop surat
+                        let width = img.width, height = img.height;
+                        if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+                        canvas.width = width; canvas.height = height; 
+                        const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height);
+                        
+                        // Gunakan PNG agar transparansi (jika ada) dan ketajaman teks tetap terjaga
+                        currentKopBase64 = canvas.toDataURL('image/png', 0.9); 
+                        
+                        document.getElementById('kop-preview').src = currentKopBase64;
+                        document.getElementById('kop-dropzone').classList.add('hidden');
+                        document.getElementById('kop-preview-container').classList.remove('hidden');
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function clearKop(e) {
+            if(e) e.stopPropagation();
+            currentKopBase64 = '';
+            document.getElementById('kop-photo').value = '';
+            document.getElementById('kop-dropzone').classList.remove('hidden');
+            document.getElementById('kop-preview-container').classList.add('hidden');
+            document.getElementById('kop-preview').src = '';
+            // Opsional: jika ingin menghapus dari DB jika disave nanti
+            if (db.settings) db.settings.kopSurat = ''; 
+        }
+
         async function saveSettings() {
+            const btn = document.querySelector('#setting-form button[type="submit"]');
+            const oldText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Menyimpan...';
+
             if (!db.settings) db.settings = {};
             db.settings.lat = document.getElementById('setting-lat').value;
             db.settings.lng = document.getElementById('setting-lng').value;
             db.settings.jamMasuk = document.getElementById('setting-masuk').value;
             db.settings.jamPulang = document.getElementById('setting-pulang').value;
-            
-            localStorage.setItem('absensi_db', JSON.stringify(db));
-            showToast("Pengaturan berhasil disimpan!");
-            await syncAdminData(); // Kirim ke Google Sheet
+
+            try {
+                // Jika ada gambar Kop Surat baru yang dipilih, unggah dulu
+                if (currentKopBase64) {
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Mengunggah Kop Surat...';
+                    const base64Data = currentKopBase64.split(',')[1];
+                    const formData = new URLSearchParams();
+                    formData.append('filename', `Kop_Surat_${Date.now()}.png`);
+                    formData.append('mimeType', 'image/png');
+                    formData.append('fileContent', base64Data);
+
+                    const uploadRes = await fetch(GOOGLE_MACRO_URL, { method: 'POST', body: formData });
+                    const uploadText = await uploadRes.text();
+                    let uploadData;
+                    try { uploadData = JSON.parse(uploadText); } catch(e) { throw new Error("Format respons upload salah."); }
+
+                    if (uploadData.result === "success" || uploadData.status === "success") {
+                        db.settings.kopSurat = uploadData.url || "";
+                    } else {
+                        throw new Error(uploadData.message || "Gagal mengunggah Kop Surat ke Google Drive.");
+                    }
+                }
+
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Menyinkronkan...';
+                localStorage.setItem('absensi_db', JSON.stringify(db));
+                
+                await syncAdminData(true); // Parameter true untuk mencegah toast dobel
+                
+                showToast("Pengaturan berhasil disimpan!");
+            } catch (error) {
+                showToast("Error: " + error.message);
+            } finally {
+                btn.innerHTML = oldText;
+                btn.disabled = false;
+                currentKopBase64 = ''; // Reset memori base64 setelah berhasil save
+            }
         }
 
-        async function manualRefresh(btn) { 
-            const org = btn.innerHTML; 
-            btn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Memuat...'; 
-            btn.disabled = true; 
-            await fetchInitialData(); 
-            btn.innerHTML = org; 
-            btn.disabled = false; 
-            showToast("Data ter-update dari database!"); 
-        }
+        async function manualRefresh(btn) { const org = btn.innerHTML; btn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i> Memuat...'; btn.disabled = true; await fetchInitialData(); btn.innerHTML = org; btn.disabled = false; showToast("Data ter-update!"); }
         
         function showToast(m) { const t = document.getElementById('toast'), msg = document.getElementById('toast-message'); if (t && msg) { msg.textContent = m; t.classList.replace('translate-y-20', 'translate-y-0'); t.classList.replace('opacity-0', 'opacity-100'); t.classList.remove('pointer-events-none'); setTimeout(() => { t.classList.replace('translate-y-0', 'translate-y-20'); t.classList.replace('opacity-100', 'opacity-0'); t.classList.add('pointer-events-none'); }, 3000); } }
     </script>
