@@ -413,7 +413,7 @@
             try {
                 // Upload Foto Selfie Resolusi Tinggi
                 const base64Data = currentGuruSelfieBase64.split(',')[1];
-                const formData = newSearchParams();
+                const formData = new URLSearchParams();
                 formData.append('filename', `Selfie_${type}_${currentUser.name}_${today}_${Date.now()}.jpg`);
                 formData.append('mimeType', 'image/jpeg');
                 formData.append('fileContent', base64Data);
