@@ -186,9 +186,8 @@
 
         const getTodayStr = () => { const tzoffset = (new Date()).getTimezoneOffset() * 60000; return (new Date(Date.now() - tzoffset)).toISOString().split('T')[0]; };
 
-        // Kalkulasi jarak Haversine (meter)
         function getDistanceFromLatLonInM(lat1, lon1, lat2, lon2) {
-            const R = 6371e3; // Radius bumi dalam meter
+            const R = 6371e3; 
             const dLat = (lat2-lat1) * (Math.PI/180);
             const dLon = (lon2-lon1) * (Math.PI/180);
             const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat1 * (Math.PI/180)) * Math.cos(lat2 * (Math.PI/180)) * Math.sin(dLon/2) * Math.sin(dLon/2);
@@ -257,7 +256,6 @@
         // --- FITUR PRESENSI GURU ---
         function checkGuruLocation() {
             const locStatus = document.getElementById('location-status');
-            
             updateGuruPresensiButtons();
 
             if (!db.settings || !db.settings.lat || !db.settings.lng) {
@@ -296,6 +294,7 @@
             }
         }
 
+        // PERBAIKAN: Kompresi dinaikkan resolusinya ke 1280px dan kualitasnya 90% (0.9)
         function handleGuruSelfieSelection(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
@@ -303,13 +302,14 @@
                     const img = new Image();
                     img.onload = function() {
                         const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 600;
+                        const MAX_WIDTH = 1280; // Resolusi Tinggi
                         let width = img.width, height = img.height;
                         if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } } 
                         else { if (height > MAX_WIDTH) { width *= MAX_WIDTH / height; height = MAX_WIDTH; } }
                         canvas.width = width; canvas.height = height; 
                         const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height);
-                        currentGuruSelfieBase64 = canvas.toDataURL('image/jpeg', 0.6);
+                        
+                        currentGuruSelfieBase64 = canvas.toDataURL('image/jpeg', 0.9); // Kualitas 90%
                         
                         document.getElementById('guru-selfie-preview').src = currentGuruSelfieBase64;
                         document.getElementById('guru-selfie-dropzone').classList.add('hidden');
@@ -372,7 +372,6 @@
             const today = getTodayStr();
             const myAtt = db.attendanceGuru ? db.attendanceGuru.find(a => a.date === today && String(a.teacher_id) === String(currentUser.id)) : null;
             
-            // Helper untuk mengekstrak ID dari URL Google Drive dan membuat URL thumbnail
             const getThumb = (url) => {
                 if (!url) return '';
                 const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
@@ -412,9 +411,9 @@
             let finalPhotoUrl = '';
 
             try {
-                // 1. Upload Foto Selfie
+                // Upload Foto Selfie Resolusi Tinggi
                 const base64Data = currentGuruSelfieBase64.split(',')[1];
-                const formData = new URLSearchParams();
+                const formData = newSearchParams();
                 formData.append('filename', `Selfie_${type}_${currentUser.name}_${today}_${Date.now()}.jpg`);
                 formData.append('mimeType', 'image/jpeg');
                 formData.append('fileContent', base64Data);
@@ -430,7 +429,6 @@
                     throw new Error(uploadData.message || "Gagal mengunggah foto ke Google Drive.");
                 }
 
-                // 2. Simpan Data Absensi
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> MENYIMPAN...';
                 const payload = {
                     date: today,
@@ -454,7 +452,6 @@
                 
                 showToast(`Berhasil Absen ${type}!`);
                 
-                // Update Lokal Memori agar langsung merender
                 if (!db.attendanceGuru) db.attendanceGuru = [];
                 const myAttIndex = db.attendanceGuru.findIndex(a => a.date === today && String(a.teacher_id) === String(currentUser.id));
                 
@@ -479,7 +476,7 @@
                 }
                 localStorage.setItem('absensi_db', JSON.stringify(db));
                 
-                clearGuruSelfie(); // Bersihkan foto setelah sukses
+                clearGuruSelfie(); 
                 renderOwnAttendance();
                 checkGuruLocation();
 
@@ -489,7 +486,6 @@
                 btn.disabled = false;
             }
         }
-
 
         // --- FITUR PRESENSI KELAS ---
         function checkGuruFormValidity() {
@@ -504,16 +500,20 @@
         function handlePhotoDrop(e) { e.preventDefault(); e.stopPropagation(); e.currentTarget.classList.remove('border-primary-500', 'bg-primary-50'); e.currentTarget.classList.replace('dark:border-primary-500', 'dark:border-slate-600'); const files = e.dataTransfer.files; if (files && files.length > 0 && files[0].type.startsWith('image/')) processGuruPhoto(files[0]); else showToast("Mohon unggah file gambar (JPG/PNG)."); }
         function handleGuruPhotoSelection(input) { if (input.files && input.files[0]) processGuruPhoto(input.files[0]); }
 
+        // PERBAIKAN: Kompresi Foto Kelas Dinaikkan Resolusinya
         function processGuruPhoto(file) {
             const dropzone = document.getElementById('guru-photo-dropzone'), previewContainer = document.getElementById('guru-photo-preview-container'), previewImg = document.getElementById('guru-photo-preview'), photoInfo = document.getElementById('guru-photo-info');
             const reader = new FileReader();
             reader.onload = function(e) {
                 const img = new Image();
                 img.onload = function() {
-                    const canvas = document.createElement('canvas'), MAX_WIDTH = 800; let width = img.width, height = img.height;
+                    const canvas = document.createElement('canvas'), MAX_WIDTH = 1280; // Resolusi Tinggi
+                    let width = img.width, height = img.height;
                     if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } } else { if (height > MAX_WIDTH) { width *= MAX_WIDTH / height; height = MAX_WIDTH; } }
                     canvas.width = width; canvas.height = height; const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height);
-                    currentGuruPhotoBase64 = canvas.toDataURL('image/jpeg', 0.6);
+                    
+                    currentGuruPhotoBase64 = canvas.toDataURL('image/jpeg', 0.9); // Kualitas 90%
+                    
                     previewImg.src = currentGuruPhotoBase64; photoInfo.textContent = `${file.name} (${Math.round((currentGuruPhotoBase64.length * 3 / 4) / 1024)} KB)`;
                     dropzone.classList.add('hidden'); previewContainer.classList.remove('hidden'); checkGuruFormValidity();
                 };
@@ -538,8 +538,6 @@
             
             if (classes.length > 0) { const first = document.querySelector(`input[name="g_class"][value="${classes[0]}"]`); if(first) { first.checked = true; document.getElementById('guru-class').value = classes[0]; } }
             loadStudentsForGuru(); checkGuruFormValidity();
-            
-            // Set Tab Default
             switchTabGuru('guru');
         }
 
@@ -583,14 +581,12 @@
                     } else {
                         throw new Error(uploadData.message || "Gagal mengunggah foto.");
                     }
-                } // Penutup blok 'if (currentGuruPhotoBase64)' yang sebelumnya hilang
+                }
                 
-                // 2. Simpan Data Absensi (JSON)
                 btn.innerHTML = 'Menyimpan Absensi...';
                 const log = { id: 'L'+Date.now(), date, period, mapel_id: selectedSubject, teacher_id: currentUser.id, class: cls, material: mat, photo: finalPhotoUrl };
                 const atts = Object.entries(activeGuruAttendanceState).map(([sid, st]) => ({ id: 'A'+Date.now()+Math.random().toString(36).substr(2,4), date, period, mapel_id: selectedSubject, teacher_id: currentUser.id, student_id: sid, status: st }));
                 
-                // DATA LANGSUNG DIKIRIM
                 const saveRes = await fetch(GOOGLE_MACRO_URL, { 
                     method: 'POST', 
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
