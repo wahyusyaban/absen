@@ -147,7 +147,7 @@
                 </div>
             </div>
 
-            <!-- Tab Setting -->
+            <!-- Tab Pengaturan -->
             <div id="admin-setting" class="hidden animate-in">
                 <div class="bg-white dark:bg-darkCard rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 p-6 space-y-6">
                     <div class="dark:text-white border-b border-slate-100 dark:border-slate-700 pb-4">
@@ -223,7 +223,10 @@
                 <form id="modal-student-form" onsubmit="event.preventDefault(); saveData('student');" class="space-y-4 text-slate-900 dark:text-white">
                     <input type="text" id="student-nis" placeholder="NIS" required class="w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:border-primary-500 text-sm">
                     <input type="text" id="student-name" placeholder="Nama Lengkap" required class="w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:border-primary-500 text-sm">
-                    <input type="text" id="student-class" placeholder="Kelas (contoh: VII A)" required class="w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:border-primary-500 text-sm dark:text-white">
+                    <!-- Kolom Kelas diubah menjadi Dropdown -->
+                    <select id="student-class" required class="w-full px-4 py-2 rounded-lg bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 outline-none focus:border-primary-500 text-sm dark:text-white">
+                        <option value="">-- Pilih Kelas --</option>
+                    </select>
                     <div class="flex gap-2 pt-2"><button type="button" onclick="closeModal('modal-student')" class="flex-1 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 font-bold text-sm text-slate-600 dark:text-slate-300">Batal</button><button type="submit" class="flex-1 py-2 rounded-lg bg-primary-600 text-white font-bold text-sm shadow-md">Simpan</button></div>
                 </form>
             </div>
@@ -267,7 +270,7 @@
         let db = { users: [], subjects: [], students: [], attendance: [], classLogs: [], settings: { lat: '', lng: '', jamMasuk: '07:00', jamPulang: '14:00', kopSurat: '' } };
         let currentUser = null;
         let currentStudentPage = 1, studentsPerPage = 20, currentEditId = null, itemToDelete = null;
-        let currentKopBase64 = ''; // Penyimpan sementara Kop Surat di memori saat dipilih
+        let currentKopBase64 = ''; 
 
         function toggleTheme() {
             const html = document.documentElement; html.classList.toggle('dark');
@@ -349,7 +352,6 @@
                 const elMasuk = getEl('setting-masuk'); if (elMasuk) elMasuk.value = db.settings.jamMasuk || '07:00';
                 const elPulang = getEl('setting-pulang'); if (elPulang) elPulang.value = db.settings.jamPulang || '14:00';
                 
-                // Menampilkan Kop Surat jika sudah ada di database
                 const kopPreview = getEl('kop-preview');
                 const kopDropzone = getEl('kop-dropzone');
                 const kopContainer = getEl('kop-preview-container');
@@ -391,18 +393,58 @@
 
         function filterAdminStudents() { currentStudentPage = 1; loadAdminData(); }
         function changeStudentPage(p) { currentStudentPage = p; loadAdminData(); }
-        function openModal(id, isEdit = false) { if (!isEdit) { currentEditId = null; const f = document.getElementById(id + '-form'); if (f) f.reset(); } const m = document.getElementById(id); if(m) { m.classList.remove('hidden'); setTimeout(() => m.classList.replace('opacity-0', 'opacity-100'), 10); } }
+        
+        function openModal(id, isEdit = false) { 
+            if (!isEdit) { 
+                currentEditId = null; 
+                const f = document.getElementById(id + '-form'); 
+                if (f) f.reset(); 
+            } 
+            
+            // Populasi Dropdown Kelas jika yang dibuka adalah modal siswa
+            if (id === 'modal-student') {
+                const classSelect = document.getElementById('student-class');
+                const classesInDb = [...new Set(db.students.map(s => s.class))].filter(Boolean).sort();
+                // Default jika sistem masih baru/kosong
+                const standardClasses = ["VII A", "VII B", "VII C", "VIII A", "VIII B", "VIII C", "IX A", "IX B", "IX C"];
+                const finalOptions = classesInDb.length > 0 ? classesInDb : standardClasses;
+                
+                classSelect.innerHTML = '<option value="">-- Pilih Kelas --</option>' + 
+                    finalOptions.map(c => `<option value="${c}">${c}</option>`).join('');
+            }
+
+            const m = document.getElementById(id); 
+            if(m) { 
+                m.classList.remove('hidden'); 
+                setTimeout(() => m.classList.replace('opacity-0', 'opacity-100'), 10); 
+            } 
+        }
+        
         function closeModal(id) { const m = document.getElementById(id); if(m) { m.classList.replace('opacity-100', 'opacity-0'); setTimeout(() => m.classList.add('hidden'), 300); } }
 
         function editData(type, id) {
             currentEditId = id; const mId = 'modal-' + (type==='student'?'student':(type==='teacher'?'teacher':'subject')); openModal(mId, true);
-            if(type === 'student') { const s = db.students.find(x => String(x.id) === String(id)); document.getElementById('student-nis').value = s.nis; document.getElementById('student-name').value = s.name; document.getElementById('student-class').value = s.class || ""; }
+            if(type === 'student') { 
+                const s = db.students.find(x => String(x.id) === String(id)); 
+                document.getElementById('student-nis').value = s.nis; 
+                document.getElementById('student-name').value = s.name; 
+                document.getElementById('student-class').value = s.class || ""; 
+            }
             else if(type === 'teacher') { const t = db.users.find(x => String(x.id) === String(id)); document.getElementById('teacher-username').value = t.username; document.getElementById('teacher-name').value = t.name; document.getElementById('teacher-password').value = t.password; document.getElementById('teacher-mapel').value = t.mapel_id || ""; }
             else if(type === 'subject') { const s = db.subjects.find(x => String(x.id) === String(id)); document.getElementById('subject-name').value = s.name; }
         }
 
         async function saveData(type) {
-            if(type === 'student') { const nis = document.getElementById('student-nis').value, name = document.getElementById('student-name').value, cls = document.getElementById('student-class').value; if(currentEditId) { const i = db.students.findIndex(x => String(x.id) === String(currentEditId)); db.students[i] = {...db.students[i], nis, name, class: cls}; } else db.students.push({id:'s'+Date.now(), nis, name, class: cls}); closeModal('modal-student'); }
+            if(type === 'student') { 
+                const nis = document.getElementById('student-nis').value, 
+                      name = document.getElementById('student-name').value, 
+                      cls = document.getElementById('student-class').value; 
+                if(currentEditId) { 
+                    const i = db.students.findIndex(x => String(x.id) === String(currentEditId)); 
+                    db.students[i] = {...db.students[i], nis, name, class: cls}; 
+                } else db.students.push({id:'s'+Date.now(), nis, name, class: cls}); 
+                closeModal('modal-student'); 
+            }
             else if(type === 'teacher') { const u = document.getElementById('teacher-username').value, n = document.getElementById('teacher-name').value, p = document.getElementById('teacher-password').value, m = document.getElementById('teacher-mapel').value; if(currentEditId) { const i = db.users.findIndex(x => String(x.id) === String(currentEditId)); db.users[i] = {...db.users[i], username:u, name:n, password:p, mapel_id:m}; } else db.users.push({id:'u'+Date.now(), username:u, name:n, password:p, role:'guru', mapel_id:m}); closeModal('modal-teacher'); }
             else if(type === 'subject') { const n = document.getElementById('subject-name').value; if(currentEditId) { const i = db.subjects.findIndex(x => String(x.id) === String(currentEditId)); db.subjects[i].name = n; } else db.subjects.push({id:'m'+Date.now(), name:n}); closeModal('modal-subject'); }
             loadAdminData(); await syncAdminData();
@@ -421,9 +463,7 @@
             localStorage.setItem('absensi_db', JSON.stringify(db));
             const toStringObj = (obj) => Object.fromEntries(Object.entries(obj).map(([k, v]) => { let val = String(v || ''); return [k, val.startsWith("'") ? val : "'" + val]; }));
             const safeUsers = db.users.map(toStringObj), safeSubjects = db.subjects.map(toStringObj), safeStudents = db.students.map(toStringObj);
-            
             const safeSettings = db.settings ? toStringObj(db.settings) : {};
-
             try { 
                 if(!silent) showToast("Sinkronisasi..."); 
                 await fetch(GOOGLE_MACRO_URL, { 
@@ -461,7 +501,6 @@
             }
         }
 
-        // --- Logika Gambar Kop Surat ---
         function handleKopSelection(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
@@ -474,9 +513,7 @@
                         if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
                         canvas.width = width; canvas.height = height; 
                         const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height);
-                        
                         currentKopBase64 = canvas.toDataURL('image/png', 0.9); 
-                        
                         document.getElementById('kop-preview').src = currentKopBase64;
                         document.getElementById('kop-dropzone').classList.add('hidden');
                         document.getElementById('kop-preview-container').classList.remove('hidden');
@@ -502,13 +539,11 @@
             const oldText = btn.innerHTML;
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Menyimpan...';
-
             if (!db.settings) db.settings = {};
             db.settings.lat = document.getElementById('setting-lat').value;
             db.settings.lng = document.getElementById('setting-lng').value;
             db.settings.jamMasuk = document.getElementById('setting-masuk').value;
             db.settings.jamPulang = document.getElementById('setting-pulang').value;
-
             try {
                 if (currentKopBase64) {
                     btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Mengunggah Kop Surat...';
@@ -517,24 +552,19 @@
                     formData.append('filename', `Kop_Surat_${Date.now()}.png`);
                     formData.append('mimeType', 'image/png');
                     formData.append('fileContent', base64Data);
-
                     const uploadRes = await fetch(GOOGLE_MACRO_URL, { method: 'POST', body: formData });
                     const uploadText = await uploadRes.text();
                     let uploadData;
                     try { uploadData = JSON.parse(uploadText); } catch(e) { throw new Error("Format respons upload salah."); }
-
                     if (uploadData.result === "success" || uploadData.status === "success") {
                         db.settings.kopSurat = uploadData.url || "";
                     } else {
                         throw new Error(uploadData.message || "Gagal mengunggah Kop Surat ke Google Drive.");
                     }
                 }
-
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Menyinkronkan...';
                 localStorage.setItem('absensi_db', JSON.stringify(db));
-                
                 await syncAdminData(true); 
-                
                 showToast("Pengaturan berhasil disimpan!");
             } catch (error) {
                 showToast("Error: " + error.message);
@@ -546,7 +576,6 @@
         }
 
         async function manualRefresh(btn) { const org = btn.innerHTML; btn.innerHTML = '<i class="fas fa-sync-alt fa-spin"></i>'; btn.disabled = true; await fetchInitialData(); btn.innerHTML = org; btn.disabled = false; showToast("Data ter-update!"); }
-        
         function showToast(m) { const t = document.getElementById('toast'), msg = document.getElementById('toast-message'); if (t && msg) { msg.textContent = m; t.classList.replace('translate-y-20', 'translate-y-0'); t.classList.replace('opacity-0', 'opacity-100'); t.classList.remove('pointer-events-none'); setTimeout(() => { t.classList.replace('translate-y-0', 'translate-y-20'); t.classList.replace('opacity-100', 'opacity-0'); t.classList.add('pointer-events-none'); }, 3000); } }
     </script>
 </body>
