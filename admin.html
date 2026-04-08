@@ -358,9 +358,9 @@
 
                 if (db.settings.kopSurat && db.settings.kopSurat.length > 5) {
                     let displayUrl = db.settings.kopSurat.replace(/^'/, '');
-                    if (displayUrl.includes('drive.google.com/file/d/')) {
-                         const match = displayUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
-                         if (match && match[1]) displayUrl = `https://drive.google.com/uc?export=view&id=${match[1]}`;
+                    const driveIdMatch = displayUrl.match(/\/d\/([a-zA-Z0-9_-]+)/) || displayUrl.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+                    if (driveIdMatch && driveIdMatch[1]) {
+                        displayUrl = `https://drive.google.com/thumbnail?id=${driveIdMatch[1]}&sz=w1000`;
                     }
                     kopPreview.src = displayUrl;
                     kopDropzone.classList.add('hidden');
@@ -405,7 +405,6 @@
             if (id === 'modal-student') {
                 const classSelect = document.getElementById('student-class');
                 const classesInDb = [...new Set(db.students.map(s => s.class))].filter(Boolean).sort();
-                // Default jika sistem masih baru/kosong
                 const standardClasses = ["VII A", "VII B", "VII C", "VIII A", "VIII B", "VIII C", "IX A", "IX B", "IX C"];
                 const finalOptions = classesInDb.length > 0 ? classesInDb : standardClasses;
                 
@@ -423,15 +422,19 @@
         function closeModal(id) { const m = document.getElementById(id); if(m) { m.classList.replace('opacity-100', 'opacity-0'); setTimeout(() => m.classList.add('hidden'), 300); } }
 
         function editData(type, id) {
-            currentEditId = id; const mId = 'modal-' + (type==='student'?'student':(type==='teacher'?'teacher':'subject')); openModal(mId, true);
+            currentEditId = id; const mId = 'modal-' + (type==='student'?'student':(type==='teacher'?'teacher':'subject')); 
+            
             if(type === 'student') { 
+                openModal(mId, true);
                 const s = db.students.find(x => String(x.id) === String(id)); 
                 document.getElementById('student-nis').value = s.nis; 
                 document.getElementById('student-name').value = s.name; 
-                document.getElementById('student-class').value = s.class || ""; 
+                setTimeout(() => {
+                    document.getElementById('student-class').value = s.class || ""; 
+                }, 50);
             }
-            else if(type === 'teacher') { const t = db.users.find(x => String(x.id) === String(id)); document.getElementById('teacher-username').value = t.username; document.getElementById('teacher-name').value = t.name; document.getElementById('teacher-password').value = t.password; document.getElementById('teacher-mapel').value = t.mapel_id || ""; }
-            else if(type === 'subject') { const s = db.subjects.find(x => String(x.id) === String(id)); document.getElementById('subject-name').value = s.name; }
+            else if(type === 'teacher') { openModal(mId, true); const t = db.users.find(x => String(x.id) === String(id)); document.getElementById('teacher-username').value = t.username; document.getElementById('teacher-name').value = t.name; document.getElementById('teacher-password').value = t.password; document.getElementById('teacher-mapel').value = t.mapel_id || ""; }
+            else if(type === 'subject') { openModal(mId, true); const s = db.subjects.find(x => String(x.id) === String(id)); document.getElementById('subject-name').value = s.name; }
         }
 
         async function saveData(type) {
@@ -572,6 +575,7 @@
                 btn.innerHTML = oldText;
                 btn.disabled = false;
                 currentKopBase64 = ''; 
+                loadAdminData(); // Refresh preview thumbnail setelah save
             }
         }
 
