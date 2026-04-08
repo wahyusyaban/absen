@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel Kepala Sekolah - Absensi Digital</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Library untuk Konversi HTML ke PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" xintegrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script>
         window.addEventListener('DOMContentLoaded', () => {
             if (typeof tailwind !== 'undefined') { tailwind.config = { darkMode: 'class', theme: { extend: { colors: { primary: { 50: '#eff6ff', 100: '#dbeafe', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8', }, darkBg: '#0f172a', darkCard: '#1e293b', darkBorder: '#334155' }, borderRadius: { '2xl': '1rem', '3xl': '1.5rem', } } } } }
@@ -81,6 +83,7 @@
                 </div>
             </div>
 
+            <!-- Tab Rekap 1-8 -->
             <div id="kepsek-tab-rekap" class="animate-in">
                 <div class="bg-white dark:bg-darkCard rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 overflow-hidden mb-6">
                     <div id="kepsek-stats-container" class="overflow-x-auto no-scrollbar"></div>
@@ -88,6 +91,7 @@
                 </div>
             </div>
 
+            <!-- Tab Jurnal -->
             <div id="kepsek-tab-jurnal" class="hidden animate-in">
                 <div class="bg-white dark:bg-darkCard rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 overflow-hidden">
                     <div class="overflow-x-auto">
@@ -101,16 +105,24 @@
                 </div>
             </div>
 
+            <!-- Tab Riwayat Siswa -->
             <div id="kepsek-tab-siswa" class="hidden animate-in">
                 <div class="bg-white dark:bg-darkCard rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 overflow-hidden">
                     <div class="p-5 border-b dark:border-slate-700 flex flex-col md:flex-row gap-4 justify-between items-center text-slate-900 dark:text-white">
-                        <div class="relative w-full max-w-sm"><i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i><input type="text" id="kepsek-siswa-search" placeholder="Cari nama siswa..." class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/50 dark:text-white border border-slate-200 dark:border-slate-700 outline-none focus:border-primary-500 text-sm font-semibold" onkeyup="filterKepsekStudents()"></div>
+                        <div class="relative w-full max-w-sm">
+                            <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                            <input type="text" id="kepsek-siswa-search" placeholder="Cari nama siswa..." class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/50 dark:text-white border border-slate-200 dark:border-slate-700 outline-none focus:border-primary-500 text-sm font-semibold" onkeyup="filterKepsekStudents()">
+                        </div>
+                        <button onclick="openDownloadModal()" class="bg-rose-500 hover:bg-rose-600 text-white px-5 py-2.5 rounded-xl font-black text-xs shadow-md shadow-rose-500/20 transition-all flex items-center gap-2 whitespace-nowrap active:scale-95">
+                            <i class="fas fa-file-pdf"></i> Download Rekap
+                        </button>
                     </div>
                     <div class="overflow-x-auto"><table class="w-full text-left whitespace-nowrap min-w-[600px]"><thead class="bg-slate-50/50 dark:bg-slate-800/50 text-[10px] font-black uppercase text-slate-400"><tr><th class="px-5 py-3">NIS</th><th class="px-5 py-3">Nama Lengkap</th><th class="px-5 py-3 text-center">Kelas</th><th class="px-5 py-3 text-right">Aksi</th></tr></thead><tbody id="table-kepsek-siswa" class="divide-y dark:divide-slate-700/50 dark:text-white"></tbody></table></div>
                     <div id="pagination-kepsek-students" class="p-5 border-t dark:border-slate-700 flex flex-col sm:flex-row justify-between items-center gap-4 text-slate-400"></div>
                 </div>
             </div>
 
+            <!-- Tab Riwayat Guru -->
             <div id="kepsek-tab-guru" class="hidden animate-in">
                 <div class="bg-white dark:bg-darkCard rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 overflow-hidden">
                     <div class="p-5 border-b dark:border-slate-700 flex flex-col md:flex-row gap-4 justify-between items-center text-slate-900 dark:text-white">
@@ -130,6 +142,33 @@
         </section>
 
         <!-- Modals -->
+        
+        <!-- Modal Download Rekap PDF -->
+        <div id="modal-download-rekap" class="fixed inset-0 bg-slate-900/60 z-[120] hidden flex items-center justify-center backdrop-blur-sm transition-all duration-300 opacity-0 p-4">
+            <div class="bg-white dark:bg-darkCard rounded-2xl p-6 w-full max-w-sm shadow-2xl dark:text-white border dark:border-slate-700">
+                <div class="w-12 h-12 bg-rose-100 dark:bg-rose-900/40 text-rose-500 rounded-xl flex items-center justify-center mb-4"><i class="fas fa-file-pdf text-xl"></i></div>
+                <h3 class="text-lg font-black mb-4">Cetak Rekap Absensi</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-[10px] font-black uppercase text-slate-400 mb-1.5">Pilih Kelas</label>
+                        <select id="dl-class" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 outline-none text-sm font-semibold dark:text-white focus:border-primary-500"></select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black uppercase text-slate-400 mb-1.5">Bulan</label>
+                        <select id="dl-month" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 outline-none text-sm font-semibold dark:text-white focus:border-primary-500"></select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-black uppercase text-slate-400 mb-1.5">Tahun</label>
+                        <select id="dl-year" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 outline-none text-sm font-semibold dark:text-white focus:border-primary-500"></select>
+                    </div>
+                    <div class="flex gap-2 pt-3">
+                        <button onclick="closeModal('modal-download-rekap')" class="flex-1 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 font-bold text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Batal</button>
+                        <button id="btn-generate-pdf" onclick="generateRekapPDF()" class="flex-1 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-600 text-white font-bold text-sm shadow-md transition-colors flex justify-center items-center gap-2"><i class="fas fa-print"></i> Buat PDF</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Modal Riwayat Siswa -->
         <div id="modal-siswa-history" class="fixed inset-0 bg-slate-900/60 z-[100] hidden flex items-center justify-center backdrop-blur-sm transition-all duration-300 opacity-0 p-4">
             <div class="bg-white dark:bg-darkCard rounded-2xl w-full max-w-5xl shadow-2xl max-h-[94vh] flex flex-col dark:text-white border dark:border-slate-700 overflow-y-auto">
@@ -252,8 +291,8 @@
     </main>
 
     <script>
-        const GOOGLE_MACRO_URL = localStorage.getItem('GOOGLE_MACRO_URL') || "https://script.google.com/macros/s/AKfycbzaxciHd1EHF368DFD0Sv0Gmk-1QnSsl-ffEbuOEr08OVnKVbbx5cnsLXkiYzAJcI7hlw/exec"; 
-        let db = { users: [], subjects: [], students: [], attendance: [], classLogs: [], attendanceGuru: [] };
+        const GOOGLE_MACRO_URL = localStorage.getItem('GOOGLE_MACRO_URL') || ""; 
+        let db = { users: [], subjects: [], students: [], attendance: [], classLogs: [], attendanceGuru: [], settings: {} };
         let currentUser = null, currentHistoryStudentId = null, currentHistoryGuruId = null, currentKepsekStudentPage = 1, currentKepsekGuruPage = 1, currentKepsekRekapPage = 1, studentsPerPage = 20, guruPerPage = 20;
 
         const getTodayStr = () => { const tzoffset = (new Date()).getTimezoneOffset() * 60000; return (new Date(Date.now() - tzoffset)).toISOString().split('T')[0]; };
@@ -291,6 +330,8 @@
                 db.attendance = (result.attendance || []).map(a => ({ ...a, date: extractDate(a.date || a.tanggal), period: String(a.period || a.jam || ''), status: a.status || a.Status || '', student_id: a.student_id, mapel_id: a.mapel_id, teacher_id: a.teacher_id }));
                 db.classLogs = (result.classLogs || []).map(l => ({ ...l, date: extractDate(l.date || l.tanggal), period: String(l.period || l.jam || ''), class: l.class || l.Kelas || '', material: l.material || l.materi || '', photo: l.photo || '', teacher_id: l.teacher_id, mapel_id: l.mapel_id }));
                 db.attendanceGuru = result.attendanceGuru || [];
+                if (result.settings) db.settings = result.settings;
+                
                 localStorage.setItem('absensi_db', JSON.stringify(db));
                 loadKepsekData();
             } catch (err) { console.error("Cloud sync fail:", err); }
@@ -381,6 +422,149 @@
             }).join('') : `<tr><td colspan="5" class="py-16 text-center text-slate-300 font-bold text-sm">Belum ada aktivitas tercatat.</td></tr>`;
         }
 
+        // --- Logika Unduh PDF Rekap Absensi Siswa ---
+        function openDownloadModal() {
+            const clsSelect = document.getElementById('dl-class');
+            const monthSelect = document.getElementById('dl-month');
+            const yearSelect = document.getElementById('dl-year');
+
+            const classes = [...new Set(db.students.map(s => s.class))].filter(Boolean).sort();
+            clsSelect.innerHTML = '<option value="ALL">Semua Kelas</option>' + classes.map(c => `<option value="${c}">${c}</option>`).join('');
+
+            const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+            const now = new Date();
+            monthSelect.innerHTML = months.map((m, i) => `<option value="${i+1}" ${i === now.getMonth() ? 'selected' : ''}>${m}</option>`).join('');
+            
+            let yearOptions = '';
+            for (let y = 2024; y <= 2100; y++) {
+                yearOptions += `<option value="${y}" ${y === now.getFullYear() ? 'selected' : ''}>${y}</option>`;
+            }
+            yearSelect.innerHTML = yearOptions;
+
+            openModal('modal-download-rekap');
+        }
+
+        async function generateRekapPDF() {
+            const btn = document.getElementById('btn-generate-pdf');
+            const originalBtnHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyusun Data...';
+            btn.disabled = true;
+
+            const cls = document.getElementById('dl-class').value;
+            const mth = parseInt(document.getElementById('dl-month').value);
+            const yr = parseInt(document.getElementById('dl-year').value);
+            const monthName = document.getElementById('dl-month').options[document.getElementById('dl-month').selectedIndex].text;
+
+            let targetStudents = db.students;
+            if (cls !== 'ALL') targetStudents = targetStudents.filter(s => s.class === cls);
+            targetStudents.sort((a,b) => { if(a.class === b.class) return a.name.localeCompare(b.name); return a.class.localeCompare(b.class); });
+
+            const filteredAtt = db.attendance.filter(a => {
+                const parts = String(a.date).split('-');
+                if (parts.length < 2) return false;
+                return parseInt(parts[0]) === yr && parseInt(parts[1]) === mth;
+            });
+
+            let htmlRows = '';
+            targetStudents.forEach((s, idx) => {
+                let h = 0, i = 0, sk = 0, a = 0;
+                
+                const uniqueDates = [...new Set(filteredAtt.filter(att => String(att.student_id) === String(s.id)).map(att => att.date))];
+                
+                uniqueDates.forEach(dateStr => {
+                    const attJam2 = filteredAtt.find(att => att.date === dateStr && String(att.student_id) === String(s.id) && String(att.period) === '2');
+                    if (attJam2) {
+                        if (attJam2.status === 'H') h++;
+                        else if (attJam2.status === 'I') i++;
+                        else if (attJam2.status === 'S') sk++;
+                        else if (attJam2.status === 'A') a++;
+                    }
+                });
+
+                htmlRows += `<tr>
+                    <td style="padding: 10px; border: 1px solid #cbd5e1; text-align: center;">${idx + 1}</td>
+                    <td style="padding: 10px; border: 1px solid #cbd5e1; text-align: center;">${s.nis}</td>
+                    <td style="padding: 10px; border: 1px solid #cbd5e1; text-align: left;">${s.name}</td>
+                    <td style="padding: 10px; border: 1px solid #cbd5e1; text-align: center;">${s.class}</td>
+                    <td style="padding: 10px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; color: #16a34a;">${h}</td>
+                    <td style="padding: 10px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; color: #2563eb;">${i}</td>
+                    <td style="padding: 10px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; color: #d97706;">${sk}</td>
+                    <td style="padding: 10px; border: 1px solid #cbd5e1; text-align: center; font-weight: bold; color: #e11d48;">${a}</td>
+                </tr>`;
+            });
+
+            if (targetStudents.length === 0) {
+                htmlRows = `<tr><td colspan="8" style="padding: 20px; text-align: center; border: 1px solid #cbd5e1;">Tidak ada data siswa untuk kelas ini.</td></tr>`;
+            }
+
+            let kopImgHtml = '';
+            if (db.settings && db.settings.kopSurat && db.settings.kopSurat.length > 5) {
+                let displayUrl = db.settings.kopSurat.replace(/^'/, '');
+                if (displayUrl.includes('drive.google.com/file/d/')) {
+                     const match = displayUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
+                     if (match && match[1]) displayUrl = `https://drive.google.com/uc?export=view&id=${match[1]}`;
+                }
+                kopImgHtml = `<img src="${displayUrl}" crossorigin="anonymous" style="width: 100%; max-height: 160px; object-fit: contain; margin-bottom: 20px;">`;
+            } else {
+                kopImgHtml = `<div style="text-align: center; padding: 20px; border: 2px dashed #ccc; margin-bottom: 20px; color: #999;">Kop Surat Belum Diatur (Hubungi Admin)</div>`;
+            }
+
+            const container = document.createElement('div');
+            container.innerHTML = `
+                <div style="padding: 40px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1e293b; background: #fff; width: 900px; box-sizing: border-box;">
+                    ${kopImgHtml}
+                    <h2 style="text-align: center; margin: 0 0 8px 0; font-size: 18px; font-weight: bold; text-transform: uppercase;">Laporan Rekapitulasi Kehadiran Siswa</h2>
+                    <p style="text-align: center; margin: 0 0 25px 0; font-size: 13px; color: #475569;">
+                        Periode: <strong style="color: #0f172a;">${monthName} ${yr}</strong> &nbsp;|&nbsp; 
+                        Kelas: <strong style="color: #0f172a;">${cls === 'ALL' ? 'Semua Kelas' : cls}</strong>
+                    </p>
+                    <table style="width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 30px;">
+                        <thead style="background-color: #f8fafc;">
+                            <tr>
+                                <th style="padding: 12px 8px; border: 1px solid #cbd5e1; width: 40px;">No</th>
+                                <th style="padding: 12px 8px; border: 1px solid #cbd5e1; width: 80px;">NIS</th>
+                                <th style="padding: 12px 8px; border: 1px solid #cbd5e1; text-align: left;">Nama Siswa</th>
+                                <th style="padding: 12px 8px; border: 1px solid #cbd5e1; width: 80px;">Kelas</th>
+                                <th style="padding: 12px 8px; border: 1px solid #cbd5e1; width: 60px;">Hadir</th>
+                                <th style="padding: 12px 8px; border: 1px solid #cbd5e1; width: 60px;">Izin</th>
+                                <th style="padding: 12px 8px; border: 1px solid #cbd5e1; width: 60px;">Sakit</th>
+                                <th style="padding: 12px 8px; border: 1px solid #cbd5e1; width: 60px;">Alpa</th>
+                            </tr>
+                        </thead>
+                        <tbody>${htmlRows}</tbody>
+                    </table>
+                    <div style="display: flex; justify-content: flex-end; margin-top: 40px; text-align: center; font-size: 12px;">
+                        <div>
+                            <p style="margin: 0 0 60px 0;">Mengetahui,<br>Kepala Sekolah</p>
+                            <p style="margin: 0; font-weight: bold; text-decoration: underline;">${currentUser.name}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            const opt = {
+                margin:       [0.5, 0.5, 0.5, 0.5],
+                filename:     `Rekap_Absensi_${cls}_${monthName}_${yr}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true, logging: false },
+                jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan PDF...';
+            
+            try {
+                await html2pdf().set(opt).from(container).save();
+                showToast('PDF Berhasil Diunduh!');
+            } catch (err) {
+                console.error(err);
+                showToast('Gagal membuat PDF.');
+            } finally {
+                closeModal('modal-download-rekap');
+                btn.innerHTML = originalBtnHtml;
+                btn.disabled = false;
+            }
+        }
+
         function filterKepsekStudents() { currentKepsekStudentPage = 1; loadKepsekStudents(); }
         function changeKepsekStudentPage(p) { currentKepsekStudentPage = p; loadKepsekStudents(); }
         function loadKepsekStudents() {
@@ -417,12 +601,10 @@
                 return parseInt(parts[0]) === yearInput && parseInt(parts[1]) === monthInput; 
             });
 
-            // Menghitung akumulasi kehadiran (HANYA BERDASARKAN JAM KE-2)
             let totalHadir = 0, totalIzin = 0, totalSakit = 0, totalAlpa = 0;
             const uniqueDates = [...new Set(filtered.map(a => a.date))].sort((a, b) => b.localeCompare(a));
             
             uniqueDates.forEach(dateStr => {
-                // Ambil status khusus di jam ke-2
                 const attJam2 = filtered.find(a => a.date === dateStr && String(a.period) === '2');
                 if (attJam2) {
                     if (attJam2.status === 'H') totalHadir++;
@@ -432,7 +614,6 @@
                 }
             });
 
-            // Update UI card akumulasi
             const elHadir = document.getElementById('history-student-hadir'); if (elHadir) elHadir.textContent = totalHadir;
             const elIzin = document.getElementById('history-student-izin'); if (elIzin) elIzin.textContent = totalIzin;
             const elSakit = document.getElementById('history-student-sakit'); if (elSakit) elSakit.textContent = totalSakit;
@@ -575,7 +756,6 @@
                 return parseInt(parts[0]) === yearInput && parseInt(parts[1]) === monthInput;
             });
             
-            // Hitung dan update Total Kehadiran
             const totalKehadiran = filtered.length;
             const totalEl = document.getElementById('history-guru-total-presence');
             if (totalEl) totalEl.textContent = totalKehadiran;
