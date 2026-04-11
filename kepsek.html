@@ -151,9 +151,9 @@
                         <div class="relative w-full max-w-sm"><i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i><input type="text" id="kepsek-guru-search" placeholder="Cari nama atau NIP guru..." class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/50 dark:text-white border border-slate-200 dark:border-slate-700 outline-none focus:border-primary-500 text-sm font-semibold" onkeyup="filterKepsekGuru()"></div>
                     </div>
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left whitespace-nowrap min-w-[1000px]">
+                        <table class="w-full text-left whitespace-nowrap min-w-[1100px]">
                             <thead class="bg-slate-50/50 dark:bg-slate-800/50 text-[10px] font-black uppercase text-slate-400">
-                                <tr><th class="px-5 py-3">Hari & Tanggal</th><th class="px-5 py-3">NIP</th><th class="px-5 py-3">Nama Lengkap Guru</th><th class="px-5 py-3 text-center">Jam Masuk</th><th class="px-5 py-3 text-center">Foto Masuk</th><th class="px-5 py-3 text-center">Jam Pulang</th><th class="px-5 py-3 text-center">Foto Pulang</th><th class="px-5 py-3 text-right">Aksi</th></tr>
+                                <tr><th class="px-5 py-3">Hari & Tanggal</th><th class="px-5 py-3">NIP</th><th class="px-5 py-3">Nama Lengkap Guru</th><th class="px-5 py-3 text-center">Jam Masuk</th><th class="px-5 py-3 text-center">Foto Masuk</th><th class="px-5 py-3 text-center">Jam Pulang</th><th class="px-5 py-3 text-center">Foto Pulang</th><th class="px-5 py-3 text-center">Validasi</th><th class="px-5 py-3 text-right">Aksi</th></tr>
                             </thead>
                             <tbody id="table-kepsek-guru" class="divide-y dark:divide-slate-700/50 dark:text-white"></tbody>
                         </table>
@@ -263,13 +263,27 @@
                                 <select id="history-guru-year-select" class="bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-3 py-2 rounded-lg font-bold outline-none dark:text-white text-xs" onchange="updateGuruMonthlyStats()"></select>
                             </div>
                         </div>
-                        <div class="bg-primary-50 dark:bg-primary-900/30 px-4 py-2.5 rounded-xl border border-primary-100 dark:border-primary-800/30 flex items-center gap-3 min-w-[160px]">
-                            <div class="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-800/50 flex items-center justify-center text-primary-600 dark:text-primary-400 shrink-0">
-                                <i class="fas fa-check-circle text-lg"></i>
+                        
+                        <div class="flex gap-4 w-full sm:w-auto overflow-x-auto no-scrollbar pb-2 sm:pb-0">
+                            <!-- Card Hadir Valid -->
+                            <div class="bg-green-50 dark:bg-green-900/30 px-4 py-2.5 rounded-xl border border-green-100 dark:border-green-800/30 flex items-center gap-3 min-w-[140px] shrink-0">
+                                <div class="w-10 h-10 rounded-full bg-green-100 dark:bg-green-800/50 flex items-center justify-center text-green-600 dark:text-green-400 shrink-0">
+                                    <i class="fas fa-check-circle text-lg"></i>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-black uppercase text-slate-500 dark:text-slate-400 tracking-wider mb-0.5">Hadir Valid</p>
+                                    <p class="text-xl font-black text-green-600 dark:text-green-400 leading-none"><span id="history-guru-total-valid">0</span> <span class="text-xs font-bold text-slate-500">Hari</span></p>
+                                </div>
                             </div>
-                            <div>
-                                <p class="text-[10px] font-black uppercase text-slate-500 dark:text-slate-400 tracking-wider mb-0.5">Total Hadir</p>
-                                <p class="text-xl font-black text-primary-600 dark:text-primary-400 leading-none"><span id="history-guru-total-presence">0</span> <span class="text-xs font-bold text-slate-500">Hari</span></p>
+                            <!-- Card Tidak Valid -->
+                            <div class="bg-rose-50 dark:bg-rose-900/30 px-4 py-2.5 rounded-xl border border-rose-100 dark:border-rose-800/30 flex items-center gap-3 min-w-[140px] shrink-0">
+                                <div class="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-800/50 flex items-center justify-center text-rose-600 dark:text-rose-400 shrink-0">
+                                    <i class="fas fa-times-circle text-lg"></i>
+                                </div>
+                                <div>
+                                    <p class="text-[10px] font-black uppercase text-slate-500 dark:text-slate-400 tracking-wider mb-0.5">Tdk Valid</p>
+                                    <p class="text-xl font-black text-rose-600 dark:text-rose-400 leading-none"><span id="history-guru-total-invalid">0</span> <span class="text-xs font-bold text-slate-500">Hari</span></p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -284,6 +298,7 @@
                                         <th class="px-5 py-3 text-center border-r dark:border-slate-700">Foto Masuk</th>
                                         <th class="px-5 py-3 text-center border-r dark:border-slate-700">Jam Pulang</th>
                                         <th class="px-5 py-3 text-center border-r dark:border-slate-700">Foto Pulang</th>
+                                        <th class="px-5 py-3 text-center border-r dark:border-slate-700">Validasi</th>
                                     </tr>
                                 </thead>
                                 <tbody id="table-guru-history-modal-body" class="divide-y dark:divide-slate-700"></tbody>
@@ -344,7 +359,13 @@
                 db.students = (result.students || []).map(s => ({ ...s, id: String(s.id && s.id !== 'undefined' ? s.id : (s.nis || s.NIS || 's'+Math.random())), nis: String(s.nis || s.NIS || ''), name: s.name || s.Nama || s['Nama Lengkap'] || 'Siswa', class: s.class || s.Kelas || s.kelas || '' }));
                 db.attendance = (result.attendance || []).map(a => ({ ...a, date: extractDate(a.date || a.tanggal), period: String(a.period || a.jam || ''), status: a.status || a.Status || '', student_id: a.student_id, mapel_id: a.mapel_id, teacher_id: a.teacher_id }));
                 db.classLogs = (result.classLogs || []).map(l => ({ ...l, date: extractDate(l.date || l.tanggal), period: String(l.period || l.jam || ''), class: l.class || l.Kelas || '', material: l.material || l.materi || '', photo: l.photo || '', teacher_id: l.teacher_id, mapel_id: l.mapel_id }));
-                db.attendanceGuru = result.attendanceGuru || [];
+                
+                // Set default status validasi jika belum ada
+                db.attendanceGuru = (result.attendanceGuru || []).map(g => ({
+                    ...g,
+                    is_valid: g.is_valid || 'pending'
+                }));
+
                 if (result.settings) db.settings = result.settings;
                 
                 localStorage.setItem('absensi_db', JSON.stringify(db));
@@ -448,25 +469,32 @@
             }).join('') : `<tr><td colspan="5" class="py-16 text-center text-slate-300 font-bold text-sm">Belum ada aktivitas tercatat.</td></tr>`;
         }
 
+        // --- Logika Unduh EXCEL Rekap Absensi Siswa ---
         function openDownloadModal() {
             const clsSelect = document.getElementById('dl-class');
             const monthSelect = document.getElementById('dl-month');
             const yearSelect = document.getElementById('dl-year');
+
             const classes = [...new Set(db.students.map(s => s.class))].filter(Boolean).sort();
             clsSelect.innerHTML = '<option value="ALL">Semua Kelas</option>' + classes.map(c => `<option value="${c}">${c}</option>`).join('');
+
             const months = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
             const now = new Date();
             monthSelect.innerHTML = months.map((m, i) => `<option value="${i+1}" ${i === now.getMonth() ? 'selected' : ''}>${m}</option>`).join('');
+            
             let yearOptions = '';
-            for (let y = 2024; y <= 2100; y++) yearOptions += `<option value="${y}" ${y === now.getFullYear() ? 'selected' : ''}>${y}</option>`;
+            for (let y = 2024; y <= 2100; y++) {
+                yearOptions += `<option value="${y}" ${y === now.getFullYear() ? 'selected' : ''}>${y}</option>`;
+            }
             yearSelect.innerHTML = yearOptions;
+
             openModal('modal-download-rekap');
         }
 
         async function generateRekapExcel() {
             const btn = document.getElementById('btn-generate-excel');
             const originalBtnHtml = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Proses...';
             btn.disabled = true;
 
             const cls = document.getElementById('dl-class').value;
@@ -487,7 +515,9 @@
             let htmlRows = '';
             targetStudents.forEach((s, idx) => {
                 let h = 0, i = 0, sk = 0, a = 0;
+                
                 const uniqueDates = [...new Set(filteredAtt.filter(att => String(att.student_id) === String(s.id)).map(att => att.date))];
+                
                 uniqueDates.forEach(dateStr => {
                     const attJam2 = filteredAtt.find(att => att.date === dateStr && String(att.student_id) === String(s.id) && String(att.period) === '2');
                     if (attJam2) {
@@ -499,16 +529,20 @@
                 });
 
                 htmlRows += `<tr>
-                    <td style="border: 1px solid #000; text-align: center;">${idx + 1}</td>
-                    <td style="border: 1px solid #000; text-align: center;">${s.nis}</td>
-                    <td style="border: 1px solid #000; text-align: left;">${s.name}</td>
-                    <td style="border: 1px solid #000; text-align: center;">${s.class}</td>
-                    <td style="border: 1px solid #000; text-align: center; font-weight: bold; color: #16a34a;">${h}</td>
-                    <td style="border: 1px solid #000; text-align: center; font-weight: bold; color: #2563eb;">${i}</td>
-                    <td style="border: 1px solid #000; text-align: center; font-weight: bold; color: #d97706;">${sk}</td>
-                    <td style="border: 1px solid #000; text-align: center; font-weight: bold; color: #e11d48;">${a}</td>
+                    <td style="border: 1px solid #000; text-align: center; vertical-align: middle;">${idx + 1}</td>
+                    <td style="border: 1px solid #000; text-align: center; vertical-align: middle;">${s.nis}</td>
+                    <td style="border: 1px solid #000; text-align: left; vertical-align: middle;">${s.name}</td>
+                    <td style="border: 1px solid #000; text-align: center; vertical-align: middle;">${s.class}</td>
+                    <td style="border: 1px solid #000; text-align: center; vertical-align: middle; font-weight: bold; color: #16a34a;">${h}</td>
+                    <td style="border: 1px solid #000; text-align: center; vertical-align: middle; font-weight: bold; color: #2563eb;">${i}</td>
+                    <td style="border: 1px solid #000; text-align: center; vertical-align: middle; font-weight: bold; color: #d97706;">${sk}</td>
+                    <td style="border: 1px solid #000; text-align: center; vertical-align: middle; font-weight: bold; color: #e11d48;">${a}</td>
                 </tr>`;
             });
+
+            if (targetStudents.length === 0) {
+                htmlRows = `<tr><td colspan="8" style="padding: 20px; text-align: center; border: 1px solid #000;">Tidak ada data siswa untuk kelas ini.</td></tr>`;
+            }
 
             let kopImgHtml = '';
             if (db.settings && db.settings.kopSurat && db.settings.kopSurat.length > 5) {
@@ -518,6 +552,8 @@
                      if (match && match[1]) displayUrl = `https://drive.google.com/uc?export=view&id=${match[1]}`;
                 }
                 kopImgHtml = `<tr><td colspan="8" style="text-align: center; height: 120px; vertical-align: middle;"><img src="${displayUrl}" width="800" height="120" style="object-fit: contain;"></td></tr>`;
+            } else {
+                kopImgHtml = `<tr><td colspan="8" style="text-align: center; height: 60px; color: #999; vertical-align: middle;">Kop Surat Belum Diatur (Hubungi Admin)</td></tr>`;
             }
 
             const htmlContent = `
@@ -533,18 +569,21 @@
                         <tr><td colspan="8" style="text-align: center; font-size: 12px;">Periode: ${monthName} ${yr} | Kelas: ${cls === 'ALL' ? 'Semua Kelas' : cls}</td></tr>
                         <tr><td colspan="8"></td></tr>
                         <tr>
-                            <th style="border: 1px solid #000; background-color: #f8fafc; text-align: center;">No</th>
-                            <th style="border: 1px solid #000; background-color: #f8fafc; text-align: center;">NIS</th>
-                            <th style="border: 1px solid #000; background-color: #f8fafc; text-align: center;">Nama Siswa</th>
-                            <th style="border: 1px solid #000; background-color: #f8fafc; text-align: center;">Kelas</th>
-                            <th style="border: 1px solid #000; background-color: #f8fafc; text-align: center;">Hadir</th>
-                            <th style="border: 1px solid #000; background-color: #f8fafc; text-align: center;">Izin</th>
-                            <th style="border: 1px solid #000; background-color: #f8fafc; text-align: center;">Sakit</th>
-                            <th style="border: 1px solid #000; background-color: #f8fafc; text-align: center;">Alpa</th>
+                            <th style="border: 1px solid #000; background-color: #f8fafc; text-align: center; height: 30px; vertical-align: middle;">No</th>
+                            <th style="border: 1px solid #000; background-color: #f8fafc; text-align: center; vertical-align: middle;">NIS</th>
+                            <th style="border: 1px solid #000; background-color: #f8fafc; text-align: center; vertical-align: middle;">Nama Siswa</th>
+                            <th style="border: 1px solid #000; background-color: #f8fafc; text-align: center; vertical-align: middle;">Kelas</th>
+                            <th style="border: 1px solid #000; background-color: #f8fafc; text-align: center; vertical-align: middle;">Hadir</th>
+                            <th style="border: 1px solid #000; background-color: #f8fafc; text-align: center; vertical-align: middle;">Izin</th>
+                            <th style="border: 1px solid #000; background-color: #f8fafc; text-align: center; vertical-align: middle;">Sakit</th>
+                            <th style="border: 1px solid #000; background-color: #f8fafc; text-align: center; vertical-align: middle;">Alpa</th>
                         </tr>
                         ${htmlRows}
                         <tr><td colspan="8"></td></tr>
-                        <tr><td colspan="5"></td><td colspan="3" style="text-align: center; vertical-align: bottom;">Mengetahui,<br>Kepala Sekolah<br><br><br><br><b>${currentUser.name}</b></td></tr>
+                        <tr>
+                            <td colspan="5"></td>
+                            <td colspan="3" style="text-align: center; vertical-align: bottom;">Mengetahui,<br>Kepala Sekolah<br><br><br><br><b>${currentUser.name}</b></td>
+                        </tr>
                     </table>
                 </body>
                 </html>
@@ -597,7 +636,8 @@
 
         function updateMonthlyStats() {
             if (!currentHistoryStudentId) return; 
-            const monthInput = parseInt(document.getElementById('history-month-select').value), yearInput = parseInt(document.getElementById('history-year-select').value);
+            const monthInput = parseInt(document.getElementById('history-month-select').value);
+            const yearInput = parseInt(document.getElementById('history-year-select').value);
             const filtered = db.attendance.filter(a => { if (String(a.student_id) !== String(currentHistoryStudentId)) return false; const parts = String(a.date).split('-'); if (parts.length < 2) return false; return parseInt(parts[0]) === yearInput && parseInt(parts[1]) === monthInput; });
             let totalHadir = 0, totalIzin = 0, totalSakit = 0, totalAlpa = 0;
             const uniqueDates = [...new Set(filtered.map(a => a.date))].sort((a, b) => b.localeCompare(a));
@@ -630,8 +670,47 @@
             } else { tbody.innerHTML = ''; tbody.parentElement.classList.add('hidden'); emptyView.style.display = 'flex'; emptyView.classList.remove('hidden'); }
         }
 
+        // --- Logika Status Validasi Presensi Guru ---
+        async function toggleValidasiGuru(id) {
+            // Cari data guru berdasarkan id atau kombinasi teacher_id dan date
+            const record = db.attendanceGuru.find(a => a.id === id || (a.teacher_id + '_' + a.date) === id);
+            if (!record) return;
+
+            // Logika toggle: pending -> valid -> invalid -> pending
+            if (!record.is_valid || record.is_valid === 'pending') {
+                record.is_valid = 'valid';
+            } else if (record.is_valid === 'valid') {
+                record.is_valid = 'invalid';
+            } else {
+                record.is_valid = 'pending';
+            }
+
+            // Simpan status sementara di frontend
+            localStorage.setItem('absensi_db', JSON.stringify(db));
+            
+            // Refresh tabel
+            loadKepsekGuru();
+            
+            // Refresh modal statistik bulanan jika modal sedang terbuka
+            if (currentHistoryGuruId && !document.getElementById('modal-guru-history').classList.contains('hidden')) {
+                updateGuruMonthlyStats();
+            }
+
+            // Mencoba kirim ke server (jika nanti ditambahkan endpoint updateValidasiGuru di backend Code.gs)
+            try {
+                await fetch(GOOGLE_MACRO_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ type: "updateValidasiGuru", id: record.id, is_valid: record.is_valid })
+                });
+            } catch (e) {
+                // Mengabaikan kegagalan untuk sementara (krn bergantung pada update backend)
+            }
+        }
+
         function filterKepsekGuru() { currentKepsekGuruPage = 1; loadKepsekGuru(); }
         function changeKepsekGuruPage(p) { currentKepsekGuruPage = p; loadKepsekGuru(); }
+        
         function loadKepsekGuru() {
             const search = document.getElementById('kepsek-guru-search').value.toLowerCase();
             let records = db.attendanceGuru.map(a => { const teacher = db.users.find(u => String(u.id) === String(a.teacher_id)) || {}; return { ...a, teacherName: teacher.name || 'Tidak Diketahui', teacherNip: teacher.username || '-' }; });
@@ -640,16 +719,29 @@
             const total = records.length, pages = Math.ceil(total / guruPerPage);
             currentKepsekGuruPage = Math.max(1, Math.min(currentKepsekGuruPage, pages || 1));
             const paginated = records.slice((currentKepsekGuruPage - 1) * guruPerPage, currentKepsekGuruPage * guruPerPage);
+            
             const getThumb = (url) => { if (!url) return ''; const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/); return match && match[1] ? `https://drive.google.com/thumbnail?id=${match[1]}&sz=w100` : url; };
             const formatTanggal = (dateStr) => { if (!dateStr) return '-'; const dt = new Date(dateStr), days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'], parts = dateStr.split('-'); if(parts.length !== 3) return dateStr; return `${days[dt.getDay()]}, ${parts[2]}/${parts[1]}/${parts[0]}`; };
+            
             const tbody = document.getElementById('table-kepsek-guru');
             if (tbody) {
-                if(paginated.length === 0) tbody.innerHTML = `<tr><td colspan="8" class="py-16 text-center text-slate-300 font-bold text-sm">Tidak ada data riwayat guru.</td></tr>`;
+                if(paginated.length === 0) tbody.innerHTML = `<tr><td colspan="9" class="py-16 text-center text-slate-300 font-bold text-sm">Tidak ada data riwayat guru.</td></tr>`;
                 else tbody.innerHTML = paginated.map(r => {
                     const thumbMasuk = getThumb(r.photo_masuk), thumbPulang = getThumb(r.photo_pulang);
                     const imgMasukHtml = r.photo_masuk ? `<img src="${thumbMasuk}" onclick="openPhotoViewer('${r.photo_masuk}')" class="w-10 h-10 object-cover rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm cursor-pointer hover:scale-110 transition-transform mx-auto" title="Lihat Foto Masuk">` : `<span class="text-xs text-slate-400 font-semibold">-</span>`;
                     const imgPulangHtml = r.photo_pulang ? `<img src="${thumbPulang}" onclick="openPhotoViewer('${r.photo_pulang}')" class="w-10 h-10 object-cover rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm cursor-pointer hover:scale-110 transition-transform mx-auto" title="Lihat Foto Pulang">` : `<span class="text-xs text-slate-400 font-semibold">-</span>`;
-                    return `<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors whitespace-nowrap"><td class="px-5 py-3 text-xs font-bold text-slate-500 dark:text-slate-400">${formatTanggal(r.date)}</td><td class="px-5 py-3 text-xs font-bold text-primary-600 dark:text-primary-400">${r.teacherNip}</td><td class="px-5 py-3 text-sm font-bold text-slate-800 dark:text-white">${r.teacherName}</td><td class="px-5 py-3 text-center text-xs font-bold text-slate-600 dark:text-slate-300">${r.time_masuk ? `<span class="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-2.5 py-1 rounded-md shadow-sm">${r.time_masuk}</span>` : '-'}</td><td class="px-5 py-3 text-center">${imgMasukHtml}</td><td class="px-5 py-3 text-center text-xs font-bold text-slate-600 dark:text-slate-300">${r.time_pulang ? `<span class="bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 px-2.5 py-1 rounded-md shadow-sm">${r.time_pulang}</span>` : '-'}</td><td class="px-5 py-3 text-center">${imgPulangHtml}</td><td class="px-5 py-3 text-right"><button onclick="showGuruHistory('${r.teacher_id}')" class="bg-primary-50 dark:bg-primary-900/30 text-primary-600 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wide hover:bg-primary-600 hover:text-white transition-all shadow-sm">Lihat Riwayat <i class="fas fa-chevron-right ml-1"></i></button></td></tr>`;
+                    
+                    const recordId = r.id || (r.teacher_id + '_' + r.date);
+                    let validasiHtml = '';
+                    if (r.is_valid === 'valid') {
+                        validasiHtml = `<button onclick="toggleValidasiGuru('${recordId}')" class="bg-green-100 text-green-700 px-3 py-1.5 rounded-md shadow-sm text-[10px] font-bold flex items-center justify-center gap-1.5 mx-auto hover:bg-green-200 transition-colors w-[90px]"><i class="fas fa-check-circle"></i> Valid</button>`;
+                    } else if (r.is_valid === 'invalid') {
+                        validasiHtml = `<button onclick="toggleValidasiGuru('${recordId}')" class="bg-rose-100 text-rose-700 px-3 py-1.5 rounded-md shadow-sm text-[10px] font-bold flex items-center justify-center gap-1.5 mx-auto hover:bg-rose-200 transition-colors w-[90px]"><i class="fas fa-times-circle"></i> Tdk Valid</button>`;
+                    } else {
+                        validasiHtml = `<button onclick="toggleValidasiGuru('${recordId}')" class="bg-yellow-100 text-yellow-700 px-3 py-1.5 rounded-md shadow-sm text-[10px] font-bold flex items-center justify-center gap-1.5 mx-auto hover:bg-yellow-200 transition-colors w-[90px]"><i class="fas fa-clock"></i> Cek</button>`;
+                    }
+
+                    return `<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors whitespace-nowrap"><td class="px-5 py-3 text-xs font-bold text-slate-500 dark:text-slate-400">${formatTanggal(r.date)}</td><td class="px-5 py-3 text-xs font-bold text-primary-600 dark:text-primary-400">${r.teacherNip}</td><td class="px-5 py-3 text-sm font-bold text-slate-800 dark:text-white">${r.teacherName}</td><td class="px-5 py-3 text-center text-xs font-bold text-slate-600 dark:text-slate-300">${r.time_masuk ? `<span class="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-2.5 py-1 rounded-md shadow-sm">${r.time_masuk}</span>` : '-'}</td><td class="px-5 py-3 text-center">${imgMasukHtml}</td><td class="px-5 py-3 text-center text-xs font-bold text-slate-600 dark:text-slate-300">${r.time_pulang ? `<span class="bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 px-2.5 py-1 rounded-md shadow-sm">${r.time_pulang}</span>` : '-'}</td><td class="px-5 py-3 text-center">${imgPulangHtml}</td><td class="px-5 py-3 text-center">${validasiHtml}</td><td class="px-5 py-3 text-right"><button onclick="showGuruHistory('${r.teacher_id}')" class="bg-primary-50 dark:bg-primary-900/30 text-primary-600 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wide hover:bg-primary-600 hover:text-white transition-all shadow-sm">Lihat Riwayat <i class="fas fa-chevron-right ml-1"></i></button></td></tr>`;
                 }).join('');
             }
             const pagContainer = document.getElementById('pagination-kepsek-guru');
@@ -671,7 +763,18 @@
             if (!currentHistoryGuruId) return;
             const monthInput = parseInt(document.getElementById('history-guru-month-select').value), yearInput = parseInt(document.getElementById('history-guru-year-select').value);
             const filtered = db.attendanceGuru.filter(a => { if (String(a.teacher_id) !== String(currentHistoryGuruId)) return false; const parts = String(a.date).split('-'); if (parts.length < 2) return false; return parseInt(parts[0]) === yearInput && parseInt(parts[1]) === monthInput; });
-            if (document.getElementById('history-guru-total-presence')) document.getElementById('history-guru-total-presence').textContent = filtered.length;
+            
+            // Kalkulasi Kehadiran Berdasarkan Validasi
+            let totalValid = 0;
+            let totalInvalid = 0;
+            filtered.forEach(r => {
+                if (r.is_valid === 'valid') totalValid++;
+                else if (r.is_valid === 'invalid') totalInvalid++;
+            });
+
+            if (document.getElementById('history-guru-total-valid')) document.getElementById('history-guru-total-valid').textContent = totalValid;
+            if (document.getElementById('history-guru-total-invalid')) document.getElementById('history-guru-total-invalid').textContent = totalInvalid;
+
             const tbody = document.getElementById('table-guru-history-modal-body'), emptyView = document.getElementById('history-guru-empty-view');
             if (filtered.length > 0) {
                 emptyView.style.display = 'none'; tbody.parentElement.classList.remove('hidden');
@@ -682,7 +785,9 @@
                     const thumbMasuk = getThumb(r.photo_masuk), thumbPulang = getThumb(r.photo_pulang);
                     const imgMasukHtml = r.photo_masuk ? `<img src="${thumbMasuk}" onclick="openPhotoViewer('${r.photo_masuk}')" class="w-10 h-10 object-cover rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm cursor-pointer hover:scale-110 transition-transform mx-auto" title="Lihat Foto Masuk">` : `<span class="text-xs text-slate-400 font-semibold">-</span>`;
                     const imgPulangHtml = r.photo_pulang ? `<img src="${thumbPulang}" onclick="openPhotoViewer('${r.photo_pulang}')" class="w-10 h-10 object-cover rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm cursor-pointer hover:scale-110 transition-transform mx-auto" title="Lihat Foto Pulang">` : `<span class="text-xs text-slate-400 font-semibold">-</span>`;
-                    return `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors whitespace-nowrap"><td class="px-5 py-3 font-bold text-xs text-slate-700 dark:text-slate-300 border-r dark:border-slate-700/50">${formatTanggal(r.date)}</td><td class="px-5 py-3 text-center text-xs font-bold text-slate-600 dark:text-slate-300">${r.time_masuk ? `<span class="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-2.5 py-1 rounded-md shadow-sm">${r.time_masuk}</span>` : '-'}</td><td class="px-5 py-3 text-center border-r dark:border-slate-700/50">${imgMasukHtml}</td><td class="px-5 py-3 text-center text-xs font-bold text-slate-600 dark:text-slate-300">${r.time_pulang ? `<span class="bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 px-2.5 py-1 rounded-md shadow-sm">${r.time_pulang}</span>` : '-'}</td><td class="px-5 py-3 text-center">${imgPulangHtml}</td></tr>`;
+                    let validasiText = r.is_valid === 'valid' ? '<span class="text-green-500 font-bold"><i class="fas fa-check-circle"></i> Valid</span>' : (r.is_valid === 'invalid' ? '<span class="text-rose-500 font-bold"><i class="fas fa-times-circle"></i> Tdk Valid</span>' : '<span class="text-yellow-500 font-bold"><i class="fas fa-clock"></i> Pending</span>');
+
+                    return `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors whitespace-nowrap"><td class="px-5 py-3 font-bold text-xs text-slate-700 dark:text-slate-300 border-r dark:border-slate-700/50">${formatTanggal(r.date)}</td><td class="px-5 py-3 text-center text-xs font-bold text-slate-600 dark:text-slate-300">${r.time_masuk ? `<span class="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-2.5 py-1 rounded-md shadow-sm">${r.time_masuk}</span>` : '-'}</td><td class="px-5 py-3 text-center border-r dark:border-slate-700/50">${imgMasukHtml}</td><td class="px-5 py-3 text-center text-xs font-bold text-slate-600 dark:text-slate-300">${r.time_pulang ? `<span class="bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 px-2.5 py-1 rounded-md shadow-sm">${r.time_pulang}</span>` : '-'}</td><td class="px-5 py-3 text-center border-r dark:border-slate-700/50">${imgPulangHtml}</td><td class="px-5 py-3 text-center text-xs">${validasiText}</td></tr>`;
                 }).join('');
             } else { tbody.innerHTML = ''; tbody.parentElement.classList.add('hidden'); emptyView.style.display = 'flex'; emptyView.classList.remove('hidden'); }
         }
