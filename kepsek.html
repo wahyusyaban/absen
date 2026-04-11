@@ -671,40 +671,31 @@
         }
 
         // --- Logika Status Validasi Presensi Guru ---
-        async function toggleValidasiGuru(id) {
-            // Cari data guru berdasarkan id atau kombinasi teacher_id dan date
+        async function setValidasiGuru(id, status) {
             const record = db.attendanceGuru.find(a => a.id === id || (a.teacher_id + '_' + a.date) === id);
             if (!record) return;
 
-            // Logika toggle: pending -> valid -> invalid -> pending
-            if (!record.is_valid || record.is_valid === 'pending') {
-                record.is_valid = 'valid';
-            } else if (record.is_valid === 'valid') {
-                record.is_valid = 'invalid';
-            } else {
+            if (record.is_valid === status) {
                 record.is_valid = 'pending';
+            } else {
+                record.is_valid = status;
             }
 
-            // Simpan status sementara di frontend
             localStorage.setItem('absensi_db', JSON.stringify(db));
             
-            // Refresh tabel
             loadKepsekGuru();
             
-            // Refresh modal statistik bulanan jika modal sedang terbuka
             if (currentHistoryGuruId && !document.getElementById('modal-guru-history').classList.contains('hidden')) {
                 updateGuruMonthlyStats();
             }
 
-            // Mencoba kirim ke server (jika nanti ditambahkan endpoint updateValidasiGuru di backend Code.gs)
             try {
                 await fetch(GOOGLE_MACRO_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ type: "updateValidasiGuru", id: record.id, is_valid: record.is_valid })
+                    body: JSON.stringify({ type: "updateValidasiGuru", id: record.id || id, is_valid: record.is_valid })
                 });
             } catch (e) {
-                // Mengabaikan kegagalan untuk sementara (krn bergantung pada update backend)
             }
         }
 
@@ -732,14 +723,19 @@
                     const imgPulangHtml = r.photo_pulang ? `<img src="${thumbPulang}" onclick="openPhotoViewer('${r.photo_pulang}')" class="w-10 h-10 object-cover rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm cursor-pointer hover:scale-110 transition-transform mx-auto" title="Lihat Foto Pulang">` : `<span class="text-xs text-slate-400 font-semibold">-</span>`;
                     
                     const recordId = r.id || (r.teacher_id + '_' + r.date);
-                    let validasiHtml = '';
-                    if (r.is_valid === 'valid') {
-                        validasiHtml = `<button onclick="toggleValidasiGuru('${recordId}')" class="bg-green-100 text-green-700 px-3 py-1.5 rounded-md shadow-sm text-[10px] font-bold flex items-center justify-center gap-1.5 mx-auto hover:bg-green-200 transition-colors w-[90px]"><i class="fas fa-check-circle"></i> Valid</button>`;
-                    } else if (r.is_valid === 'invalid') {
-                        validasiHtml = `<button onclick="toggleValidasiGuru('${recordId}')" class="bg-rose-100 text-rose-700 px-3 py-1.5 rounded-md shadow-sm text-[10px] font-bold flex items-center justify-center gap-1.5 mx-auto hover:bg-rose-200 transition-colors w-[90px]"><i class="fas fa-times-circle"></i> Tdk Valid</button>`;
-                    } else {
-                        validasiHtml = `<button onclick="toggleValidasiGuru('${recordId}')" class="bg-yellow-100 text-yellow-700 px-3 py-1.5 rounded-md shadow-sm text-[10px] font-bold flex items-center justify-center gap-1.5 mx-auto hover:bg-yellow-200 transition-colors w-[90px]"><i class="fas fa-clock"></i> Cek</button>`;
-                    }
+                    const isVal = r.is_valid === 'valid';
+                    const isInv = r.is_valid === 'invalid';
+                    
+                    let validasiHtml = `
+                        <div class="flex items-center justify-center gap-2">
+                            <button onclick="setValidasiGuru('${recordId}', 'valid')" class="w-8 h-8 rounded-full flex items-center justify-center transition-all ${isVal ? 'bg-green-500 text-white shadow-md shadow-green-500/30' : 'bg-slate-100 text-slate-400 hover:bg-green-100 hover:text-green-500 dark:bg-slate-800 dark:text-slate-500'}" title="Valid">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button onclick="setValidasiGuru('${recordId}', 'invalid')" class="w-8 h-8 rounded-full flex items-center justify-center transition-all ${isInv ? 'bg-rose-500 text-white shadow-md shadow-rose-500/30' : 'bg-slate-100 text-slate-400 hover:bg-rose-100 hover:text-rose-500 dark:bg-slate-800 dark:text-slate-500'}" title="Tidak Valid">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    `;
 
                     return `<tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/50 transition-colors whitespace-nowrap"><td class="px-5 py-3 text-xs font-bold text-slate-500 dark:text-slate-400">${formatTanggal(r.date)}</td><td class="px-5 py-3 text-xs font-bold text-primary-600 dark:text-primary-400">${r.teacherNip}</td><td class="px-5 py-3 text-sm font-bold text-slate-800 dark:text-white">${r.teacherName}</td><td class="px-5 py-3 text-center text-xs font-bold text-slate-600 dark:text-slate-300">${r.time_masuk ? `<span class="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-2.5 py-1 rounded-md shadow-sm">${r.time_masuk}</span>` : '-'}</td><td class="px-5 py-3 text-center">${imgMasukHtml}</td><td class="px-5 py-3 text-center text-xs font-bold text-slate-600 dark:text-slate-300">${r.time_pulang ? `<span class="bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 px-2.5 py-1 rounded-md shadow-sm">${r.time_pulang}</span>` : '-'}</td><td class="px-5 py-3 text-center">${imgPulangHtml}</td><td class="px-5 py-3 text-center">${validasiHtml}</td><td class="px-5 py-3 text-right"><button onclick="showGuruHistory('${r.teacher_id}')" class="bg-primary-50 dark:bg-primary-900/30 text-primary-600 px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wide hover:bg-primary-600 hover:text-white transition-all shadow-sm">Lihat Riwayat <i class="fas fa-chevron-right ml-1"></i></button></td></tr>`;
                 }).join('');
@@ -785,11 +781,30 @@
                     const thumbMasuk = getThumb(r.photo_masuk), thumbPulang = getThumb(r.photo_pulang);
                     const imgMasukHtml = r.photo_masuk ? `<img src="${thumbMasuk}" onclick="openPhotoViewer('${r.photo_masuk}')" class="w-10 h-10 object-cover rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm cursor-pointer hover:scale-110 transition-transform mx-auto" title="Lihat Foto Masuk">` : `<span class="text-xs text-slate-400 font-semibold">-</span>`;
                     const imgPulangHtml = r.photo_pulang ? `<img src="${thumbPulang}" onclick="openPhotoViewer('${r.photo_pulang}')" class="w-10 h-10 object-cover rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm cursor-pointer hover:scale-110 transition-transform mx-auto" title="Lihat Foto Pulang">` : `<span class="text-xs text-slate-400 font-semibold">-</span>`;
-                    let validasiText = r.is_valid === 'valid' ? '<span class="text-green-500 font-bold"><i class="fas fa-check-circle"></i> Valid</span>' : (r.is_valid === 'invalid' ? '<span class="text-rose-500 font-bold"><i class="fas fa-times-circle"></i> Tdk Valid</span>' : '<span class="text-yellow-500 font-bold"><i class="fas fa-clock"></i> Pending</span>');
+                    
+                    const recordId = r.id || (r.teacher_id + '_' + r.date);
+                    const isVal = r.is_valid === 'valid';
+                    const isInv = r.is_valid === 'invalid';
+                    
+                    let validasiHtml = `
+                        <div class="flex items-center justify-center gap-2">
+                            <button onclick="setValidasiGuru('${recordId}', 'valid')" class="w-8 h-8 rounded-full flex items-center justify-center transition-all ${isVal ? 'bg-green-500 text-white shadow-md shadow-green-500/30' : 'bg-slate-100 text-slate-400 hover:bg-green-100 hover:text-green-500 dark:bg-slate-800 dark:text-slate-500'}" title="Valid">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button onclick="setValidasiGuru('${recordId}', 'invalid')" class="w-8 h-8 rounded-full flex items-center justify-center transition-all ${isInv ? 'bg-rose-500 text-white shadow-md shadow-rose-500/30' : 'bg-slate-100 text-slate-400 hover:bg-rose-100 hover:text-rose-500 dark:bg-slate-800 dark:text-slate-500'}" title="Tidak Valid">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    `;
 
-                    return `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors whitespace-nowrap"><td class="px-5 py-3 font-bold text-xs text-slate-700 dark:text-slate-300 border-r dark:border-slate-700/50">${formatTanggal(r.date)}</td><td class="px-5 py-3 text-center text-xs font-bold text-slate-600 dark:text-slate-300">${r.time_masuk ? `<span class="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-2.5 py-1 rounded-md shadow-sm">${r.time_masuk}</span>` : '-'}</td><td class="px-5 py-3 text-center border-r dark:border-slate-700/50">${imgMasukHtml}</td><td class="px-5 py-3 text-center text-xs font-bold text-slate-600 dark:text-slate-300">${r.time_pulang ? `<span class="bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 px-2.5 py-1 rounded-md shadow-sm">${r.time_pulang}</span>` : '-'}</td><td class="px-5 py-3 text-center border-r dark:border-slate-700/50">${imgPulangHtml}</td><td class="px-5 py-3 text-center text-xs">${validasiText}</td></tr>`;
+                    return `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors whitespace-nowrap"><td class="px-5 py-3 font-bold text-xs text-slate-700 dark:text-slate-300 border-r dark:border-slate-700/50">${formatTanggal(r.date)}</td><td class="px-5 py-3 text-center text-xs font-bold text-slate-600 dark:text-slate-300">${r.time_masuk ? `<span class="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 px-2.5 py-1 rounded-md shadow-sm">${r.time_masuk}</span>` : '-'}</td><td class="px-5 py-3 text-center border-r dark:border-slate-700/50">${imgMasukHtml}</td><td class="px-5 py-3 text-center text-xs font-bold text-slate-600 dark:text-slate-300">${r.time_pulang ? `<span class="bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 px-2.5 py-1 rounded-md shadow-sm">${r.time_pulang}</span>` : '-'}</td><td class="px-5 py-3 text-center border-r dark:border-slate-700/50">${imgPulangHtml}</td><td class="px-5 py-3 text-center">${validasiHtml}</td></tr>`;
                 }).join('');
-            } else { tbody.innerHTML = ''; tbody.parentElement.classList.add('hidden'); emptyView.style.display = 'flex'; emptyView.classList.remove('hidden'); }
+            } else {
+                tbody.innerHTML = '';
+                tbody.parentElement.classList.add('hidden');
+                emptyView.style.display = 'flex';
+                emptyView.classList.remove('hidden');
+            }
         }
 
         function openPhotoViewer(url) {
