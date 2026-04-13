@@ -110,10 +110,31 @@
                 <div class="bg-white dark:bg-darkCard rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 overflow-hidden mb-6">
                     <div class="p-5 border-b dark:border-slate-700 flex justify-between items-center">
                         <h3 class="text-lg font-black dark:text-white">Data Rekap 1-8</h3>
-                        <button onclick="openRekapHarianModal()" class="bg-primary-50 dark:bg-primary-900/30 text-primary-600 px-4 py-2 rounded-xl font-bold text-xs shadow-sm transition-all hover:bg-primary-600 hover:text-white flex items-center gap-2 active:scale-95">
-                            <i class="fas fa-chart-pie"></i> Rekap Jam Ke-2
-                        </button>
                     </div>
+                    
+                    <!-- NEW SUMMARY SECTION -->
+                    <div class="p-5 border-b dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30">
+                        <p class="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-3">Rekap Kehadiran (Berdasarkan Jam ke-2)</p>
+                        <div class="grid grid-cols-4 gap-2 sm:gap-4 max-w-sm">
+                            <div class="bg-green-50 dark:bg-green-900/30 py-2 px-1 rounded-lg border border-green-100 dark:border-green-800/30 text-center">
+                                <p class="text-[9px] font-bold uppercase text-green-600 dark:text-green-400 mb-0.5">Hadir</p>
+                                <p class="text-lg sm:text-xl font-black text-green-700 dark:text-green-300 leading-none" id="inline-rh-hadir">0</p>
+                            </div>
+                            <div class="bg-blue-50 dark:bg-blue-900/30 py-2 px-1 rounded-lg border border-blue-100 dark:border-blue-800/30 text-center">
+                                <p class="text-[9px] font-bold uppercase text-blue-600 dark:text-blue-400 mb-0.5">Izin</p>
+                                <p class="text-lg sm:text-xl font-black text-blue-700 dark:text-blue-300 leading-none" id="inline-rh-izin">0</p>
+                            </div>
+                            <div class="bg-yellow-50 dark:bg-yellow-900/30 py-2 px-1 rounded-lg border border-yellow-100 dark:border-yellow-800/30 text-center">
+                                <p class="text-[9px] font-bold uppercase text-yellow-600 dark:text-yellow-400 mb-0.5">Sakit</p>
+                                <p class="text-lg sm:text-xl font-black text-yellow-700 dark:text-yellow-300 leading-none" id="inline-rh-sakit">0</p>
+                            </div>
+                            <div class="bg-rose-50 dark:bg-rose-900/30 py-2 px-1 rounded-lg border border-rose-100 dark:border-rose-800/30 text-center">
+                                <p class="text-[9px] font-bold uppercase text-rose-600 dark:text-rose-400 mb-0.5">Alpa</p>
+                                <p class="text-lg sm:text-xl font-black text-rose-700 dark:text-rose-300 leading-none" id="inline-rh-alpa">0</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <div id="kepsek-stats-container" class="overflow-x-auto no-scrollbar"></div>
                     <div id="pagination-kepsek-rekap" class="p-5 border-t dark:border-slate-700 flex flex-col sm:flex-row justify-between items-center gap-4 text-slate-400"></div>
                 </div>
@@ -168,47 +189,6 @@
                 </div>
             </div>
         </section>
-
-        <!-- Modals -->
-
-        <!-- Modal Rekap Harian (Berdasarkan Jam ke-2) -->
-        <div id="modal-rekap-harian" class="fixed inset-0 bg-slate-900/60 z-[120] hidden flex items-center justify-center backdrop-blur-sm transition-all duration-300 opacity-0 p-4">
-            <div class="bg-white dark:bg-darkCard rounded-2xl p-6 w-full max-w-lg shadow-2xl dark:text-white border dark:border-slate-700">
-                <div class="flex justify-between items-center mb-6 border-b dark:border-slate-700 pb-4">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 bg-primary-100 dark:bg-primary-900/40 text-primary-600 rounded-xl flex items-center justify-center shrink-0">
-                            <i class="fas fa-chart-pie text-xl"></i>
-                        </div>
-                        <div>
-                            <h3 class="text-lg font-black leading-none text-slate-900 dark:text-white">Ringkasan Jam Ke-2</h3>
-                            <p class="text-xs text-slate-500 font-bold mt-1" id="rekap-harian-subtitle">Tanggal - Kelas</p>
-                        </div>
-                    </div>
-                    <button onclick="closeModal('modal-rekap-harian')" class="w-8 h-8 rounded-lg bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-rose-500 transition-colors">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-green-50 dark:bg-green-900/30 p-5 rounded-xl border border-green-100 dark:border-green-800/30 text-center flex flex-col items-center justify-center">
-                        <p class="text-[11px] font-black uppercase text-green-600 dark:text-green-400 tracking-widest mb-1.5">Hadir</p>
-                        <p class="text-4xl font-black text-green-700 dark:text-green-300 leading-none" id="rh-hadir">0</p>
-                    </div>
-                    <div class="bg-blue-50 dark:bg-blue-900/30 p-5 rounded-xl border border-blue-100 dark:border-blue-800/30 text-center flex flex-col items-center justify-center">
-                        <p class="text-[11px] font-black uppercase text-blue-600 dark:text-blue-400 tracking-widest mb-1.5">Izin</p>
-                        <p class="text-4xl font-black text-blue-700 dark:text-blue-300 leading-none" id="rh-izin">0</p>
-                    </div>
-                    <div class="bg-yellow-50 dark:bg-yellow-900/30 p-5 rounded-xl border border-yellow-100 dark:border-yellow-800/30 text-center flex flex-col items-center justify-center">
-                        <p class="text-[11px] font-black uppercase text-yellow-600 dark:text-yellow-400 tracking-widest mb-1.5">Sakit</p>
-                        <p class="text-4xl font-black text-yellow-700 dark:text-yellow-300 leading-none" id="rh-sakit">0</p>
-                    </div>
-                    <div class="bg-rose-50 dark:bg-rose-900/30 p-5 rounded-xl border border-rose-100 dark:border-rose-800/30 text-center flex flex-col items-center justify-center">
-                        <p class="text-[11px] font-black uppercase text-rose-600 dark:text-rose-400 tracking-widest mb-1.5">Alpa</p>
-                        <p class="text-4xl font-black text-rose-700 dark:text-rose-300 leading-none" id="rh-alpa">0</p>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- Modal Download Rekap Excel -->
         <div id="modal-download-rekap" class="fixed inset-0 bg-slate-900/60 z-[120] hidden flex items-center justify-center backdrop-blur-sm transition-all duration-300 opacity-0 p-4">
@@ -460,6 +440,24 @@
             let targetStudents = db.students; if (cls !== 'ALL') targetStudents = targetStudents.filter(s => s.class === cls); 
             targetStudents.sort((a,b) => { if(a.class === b.class) return a.name.localeCompare(b.name); return a.class.localeCompare(b.class); });
 
+            // --- CALCULATE SUMMARY ---
+            let summaryH = 0, summaryI = 0, summaryS = 0, summaryA = 0;
+            targetStudents.forEach(student => {
+                const attJam2 = filtered.find(att => String(att.student_id) === String(student.id) && String(att.period) === '2');
+                if (attJam2) {
+                    if (attJam2.status === 'H') summaryH++;
+                    else if (attJam2.status === 'I') summaryI++;
+                    else if (attJam2.status === 'S') summaryS++;
+                    else if (attJam2.status === 'A') summaryA++;
+                }
+            });
+            
+            const elH = document.getElementById('inline-rh-hadir'); if (elH) elH.textContent = summaryH;
+            const elI = document.getElementById('inline-rh-izin'); if (elI) elI.textContent = summaryI;
+            const elS = document.getElementById('inline-rh-sakit'); if (elS) elS.textContent = summaryS;
+            const elA = document.getElementById('inline-rh-alpa'); if (elA) elA.textContent = summaryA;
+            // --- END CALCULATE SUMMARY ---
+
             const totalRekap = targetStudents.length;
             const pagesRekap = Math.ceil(totalRekap / studentsPerPage);
             currentKepsekRekapPage = Math.max(1, Math.min(currentKepsekRekapPage, pagesRekap || 1));
@@ -655,43 +653,6 @@
                 btn.innerHTML = originalBtnHtml;
                 btn.disabled = false;
             }
-        }
-
-        // --- Logika Buka Modal Rekap Harian (Berdasarkan Jam ke-2) ---
-        function openRekapHarianModal() {
-            const dateInput = document.getElementById('filter-kepsek-date');
-            const dateVal = dateInput.value || getTodayStr();
-            const cls = document.getElementById('filter-kepsek-class').value;
-            
-            const dt = new Date(dateVal);
-            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
-            const formattedDate = `${days[dt.getDay()]}, ${String(dt.getDate()).padStart(2, '0')}/${String(dt.getMonth()+1).padStart(2, '0')}/${dt.getFullYear()}`;
-            
-            document.getElementById('rekap-harian-subtitle').textContent = `${formattedDate} | Kelas: ${cls === 'ALL' ? 'Semua Kelas' : cls}`;
-
-            let targetStudents = db.students;
-            if (cls !== 'ALL') {
-                targetStudents = targetStudents.filter(s => s.class === cls);
-            }
-
-            let h = 0, i = 0, sk = 0, a = 0;
-            
-            targetStudents.forEach(student => {
-                const attJam2 = db.attendance.find(att => att.date === dateVal && String(att.student_id) === String(student.id) && String(att.period) === '2');
-                if (attJam2) {
-                    if (attJam2.status === 'H') h++;
-                    else if (attJam2.status === 'I') i++;
-                    else if (attJam2.status === 'S') sk++;
-                    else if (attJam2.status === 'A') a++;
-                }
-            });
-
-            document.getElementById('rh-hadir').textContent = h;
-            document.getElementById('rh-izin').textContent = i;
-            document.getElementById('rh-sakit').textContent = sk;
-            document.getElementById('rh-alpa').textContent = a;
-
-            openModal('modal-rekap-harian');
         }
 
         function filterKepsekStudents() { currentKepsekStudentPage = 1; loadKepsekStudents(); }
