@@ -112,7 +112,6 @@
                         <h3 class="text-lg font-black dark:text-white">Data Rekap 1-8</h3>
                     </div>
                     
-                    <!-- NEW SUMMARY SECTION -->
                     <div class="p-5 border-b dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30">
                         <p class="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-3">Rekap Kehadiran (Berdasarkan Jam ke-2)</p>
                         <div class="grid grid-cols-4 gap-2 sm:gap-4 max-w-sm">
@@ -177,6 +176,29 @@
                     <div class="p-5 border-b dark:border-slate-700 flex flex-col md:flex-row gap-4 justify-between items-center text-slate-900 dark:text-white">
                         <div class="relative w-full max-w-sm"><i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i><input type="text" id="kepsek-guru-search" placeholder="Cari nama atau NIP guru..." class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/50 dark:text-white border border-slate-200 dark:border-slate-700 outline-none focus:border-primary-500 text-sm font-semibold" onkeyup="filterKepsekGuru()"></div>
                     </div>
+                    
+                    <!-- NEW SUMMARY SECTION GURU -->
+                    <div class="px-5 py-4 border-b dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 flex flex-wrap gap-3">
+                        <div class="bg-green-50 dark:bg-green-900/30 py-2 px-3 rounded-lg border border-green-100 dark:border-green-800/30 flex items-center gap-2">
+                            <div class="w-7 h-7 rounded-full bg-green-100 dark:bg-green-800/50 flex items-center justify-center text-green-600 dark:text-green-400 shrink-0">
+                                <i class="fas fa-check-circle text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-[9px] font-bold uppercase text-green-600 dark:text-green-400 mb-0.5">Hadir Valid</p>
+                                <p class="text-sm font-black text-green-700 dark:text-green-300 leading-none" id="inline-guru-valid">0</p>
+                            </div>
+                        </div>
+                        <div class="bg-rose-50 dark:bg-rose-900/30 py-2 px-3 rounded-lg border border-rose-100 dark:border-rose-800/30 flex items-center gap-2">
+                            <div class="w-7 h-7 rounded-full bg-rose-100 dark:bg-rose-800/50 flex items-center justify-center text-rose-600 dark:text-rose-400 shrink-0">
+                                <i class="fas fa-times-circle text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-[9px] font-bold uppercase text-rose-600 dark:text-rose-400 mb-0.5">Tdk Valid</p>
+                                <p class="text-sm font-black text-rose-700 dark:text-rose-300 leading-none" id="inline-guru-invalid">0</p>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="overflow-x-auto">
                         <table class="w-full text-left whitespace-nowrap min-w-[1100px]">
                             <thead class="bg-slate-50/50 dark:bg-slate-800/50 text-[10px] font-black uppercase text-slate-400">
@@ -756,6 +778,17 @@
             // Filter berdasarkan tanggal yang dipilih
             records = records.filter(r => r.date === dateVal);
             
+            // --- CALCULATE SUMMARY GURU ---
+            let totalValid = 0;
+            let totalInvalid = 0;
+            records.forEach(r => {
+                if (r.is_valid === 'valid') totalValid++;
+                else if (r.is_valid === 'invalid') totalInvalid++;
+            });
+            const elValid = document.getElementById('inline-guru-valid'); if (elValid) elValid.textContent = totalValid;
+            const elInvalid = document.getElementById('inline-guru-invalid'); if (elInvalid) elInvalid.textContent = totalInvalid;
+            // --- END CALCULATE SUMMARY GURU ---
+
             records.sort((a, b) => a.teacherName.localeCompare(b.teacherName));
             
             if (search) records = records.filter(r => r.teacherName.toLowerCase().includes(search) || r.teacherNip.toLowerCase().includes(search));
