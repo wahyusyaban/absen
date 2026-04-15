@@ -108,28 +108,27 @@
             <!-- Tab Rekap 1-8 -->
             <div id="kepsek-tab-rekap" class="animate-in">
                 <div class="bg-white dark:bg-darkCard rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 overflow-hidden mb-6">
-                    <div class="p-5 border-b dark:border-slate-700 flex justify-between items-center">
-                        <h3 class="text-lg font-black dark:text-white">Data Rekap 1-8</h3>
-                    </div>
-                    
-                    <div class="p-5 border-b dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30">
-                        <p class="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-3">Rekap Kehadiran (Berdasarkan Jam ke-2)</p>
-                        <div class="grid grid-cols-4 gap-2 sm:gap-4 max-w-sm">
-                            <div class="bg-green-50 dark:bg-green-900/30 py-2 px-1 rounded-lg border border-green-100 dark:border-green-800/30 text-center">
+                    <div class="p-5 border-b dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                            <h3 class="text-lg font-black dark:text-white">Data Rekap 1-8</h3>
+                            <p class="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-wider">Jam Ke-2</p>
+                        </div>
+                        <div class="grid grid-cols-4 gap-2 sm:gap-3 w-full md:w-auto shrink-0">
+                            <div class="bg-green-50 dark:bg-green-900/30 py-1.5 px-3 rounded-lg border border-green-100 dark:border-green-800/30 text-center min-w-[70px]">
                                 <p class="text-[9px] font-bold uppercase text-green-600 dark:text-green-400 mb-0.5">Hadir</p>
-                                <p class="text-lg sm:text-xl font-black text-green-700 dark:text-green-300 leading-none" id="inline-rh-hadir">0</p>
+                                <p class="text-lg font-black text-green-700 dark:text-green-300 leading-none" id="inline-rh-hadir">0</p>
                             </div>
-                            <div class="bg-blue-50 dark:bg-blue-900/30 py-2 px-1 rounded-lg border border-blue-100 dark:border-blue-800/30 text-center">
+                            <div class="bg-blue-50 dark:bg-blue-900/30 py-1.5 px-3 rounded-lg border border-blue-100 dark:border-blue-800/30 text-center min-w-[70px]">
                                 <p class="text-[9px] font-bold uppercase text-blue-600 dark:text-blue-400 mb-0.5">Izin</p>
-                                <p class="text-lg sm:text-xl font-black text-blue-700 dark:text-blue-300 leading-none" id="inline-rh-izin">0</p>
+                                <p class="text-lg font-black text-blue-700 dark:text-blue-300 leading-none" id="inline-rh-izin">0</p>
                             </div>
-                            <div class="bg-yellow-50 dark:bg-yellow-900/30 py-2 px-1 rounded-lg border border-yellow-100 dark:border-yellow-800/30 text-center">
+                            <div class="bg-yellow-50 dark:bg-yellow-900/30 py-1.5 px-3 rounded-lg border border-yellow-100 dark:border-yellow-800/30 text-center min-w-[70px]">
                                 <p class="text-[9px] font-bold uppercase text-yellow-600 dark:text-yellow-400 mb-0.5">Sakit</p>
-                                <p class="text-lg sm:text-xl font-black text-yellow-700 dark:text-yellow-300 leading-none" id="inline-rh-sakit">0</p>
+                                <p class="text-lg font-black text-yellow-700 dark:text-yellow-300 leading-none" id="inline-rh-sakit">0</p>
                             </div>
-                            <div class="bg-rose-50 dark:bg-rose-900/30 py-2 px-1 rounded-lg border border-rose-100 dark:border-rose-800/30 text-center">
+                            <div class="bg-rose-50 dark:bg-rose-900/30 py-1.5 px-3 rounded-lg border border-rose-100 dark:border-rose-800/30 text-center min-w-[70px]">
                                 <p class="text-[9px] font-bold uppercase text-rose-600 dark:text-rose-400 mb-0.5">Alpa</p>
-                                <p class="text-lg sm:text-xl font-black text-rose-700 dark:text-rose-300 leading-none" id="inline-rh-alpa">0</p>
+                                <p class="text-lg font-black text-rose-700 dark:text-rose-300 leading-none" id="inline-rh-alpa">0</p>
                             </div>
                         </div>
                     </div>
@@ -173,28 +172,32 @@
             <!-- Tab Riwayat Guru -->
             <div id="kepsek-tab-guru" class="hidden animate-in">
                 <div class="bg-white dark:bg-darkCard rounded-2xl shadow-lg border border-slate-100 dark:border-slate-700 overflow-hidden">
-                    <div class="p-5 border-b dark:border-slate-700 flex flex-col md:flex-row gap-4 justify-between items-center text-slate-900 dark:text-white">
-                        <div class="relative w-full max-w-sm"><i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i><input type="text" id="kepsek-guru-search" placeholder="Cari nama atau NIP guru..." class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/50 dark:text-white border border-slate-200 dark:border-slate-700 outline-none focus:border-primary-500 text-sm font-semibold" onkeyup="filterKepsekGuru()"></div>
-                    </div>
-                    
-                    <!-- NEW SUMMARY SECTION GURU -->
-                    <div class="px-5 py-4 border-b dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 flex flex-wrap gap-3">
-                        <div class="bg-green-50 dark:bg-green-900/30 py-2 px-3 rounded-lg border border-green-100 dark:border-green-800/30 flex items-center gap-2">
-                            <div class="w-7 h-7 rounded-full bg-green-100 dark:bg-green-800/50 flex items-center justify-center text-green-600 dark:text-green-400 shrink-0">
-                                <i class="fas fa-check-circle text-sm"></i>
-                            </div>
-                            <div>
-                                <p class="text-[9px] font-bold uppercase text-green-600 dark:text-green-400 mb-0.5">Hadir Valid</p>
-                                <p class="text-sm font-black text-green-700 dark:text-green-300 leading-none" id="inline-guru-valid">0</p>
-                            </div>
+                    <div class="p-5 border-b dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/30 flex flex-col md:flex-row gap-4 justify-between items-start md:items-center text-slate-900 dark:text-white">
+                        <div class="relative w-full md:max-w-sm shrink-0">
+                            <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                            <input type="text" id="kepsek-guru-search" placeholder="Cari nama atau NIP guru..." class="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white dark:bg-slate-900/50 dark:text-white border border-slate-200 dark:border-slate-700 outline-none focus:border-primary-500 text-sm font-semibold" onkeyup="filterKepsekGuru()">
                         </div>
-                        <div class="bg-rose-50 dark:bg-rose-900/30 py-2 px-3 rounded-lg border border-rose-100 dark:border-rose-800/30 flex items-center gap-2">
-                            <div class="w-7 h-7 rounded-full bg-rose-100 dark:bg-rose-800/50 flex items-center justify-center text-rose-600 dark:text-rose-400 shrink-0">
-                                <i class="fas fa-times-circle text-sm"></i>
+                        
+                        <div class="flex gap-3 w-full md:w-auto overflow-x-auto no-scrollbar pb-1 md:pb-0">
+                            <!-- Card Hadir Valid -->
+                            <div class="bg-green-50 dark:bg-green-900/30 py-2 px-3 rounded-xl border border-green-100 dark:border-green-800/30 flex items-center gap-2 shrink-0">
+                                <div class="w-7 h-7 rounded-full bg-green-100 dark:bg-green-800/50 flex items-center justify-center text-green-600 dark:text-green-400 shrink-0">
+                                    <i class="fas fa-check-circle text-sm"></i>
+                                </div>
+                                <div>
+                                    <p class="text-[9px] font-bold uppercase text-green-600 dark:text-green-400 mb-0.5">Hadir Valid</p>
+                                    <p class="text-sm font-black text-green-700 dark:text-green-300 leading-none" id="inline-guru-valid">0</p>
+                                </div>
                             </div>
-                            <div>
-                                <p class="text-[9px] font-bold uppercase text-rose-600 dark:text-rose-400 mb-0.5">Tdk Valid</p>
-                                <p class="text-sm font-black text-rose-700 dark:text-rose-300 leading-none" id="inline-guru-invalid">0</p>
+                            <!-- Card Tidak Valid -->
+                            <div class="bg-rose-50 dark:bg-rose-900/30 py-2 px-3 rounded-xl border border-rose-100 dark:border-rose-800/30 flex items-center gap-2 shrink-0">
+                                <div class="w-7 h-7 rounded-full bg-rose-100 dark:bg-rose-800/50 flex items-center justify-center text-rose-600 dark:text-rose-400 shrink-0">
+                                    <i class="fas fa-times-circle text-sm"></i>
+                                </div>
+                                <div>
+                                    <p class="text-[9px] font-bold uppercase text-rose-600 dark:text-rose-400 mb-0.5">Tdk Valid</p>
+                                    <p class="text-sm font-black text-rose-700 dark:text-rose-300 leading-none" id="inline-guru-invalid">0</p>
+                                </div>
                             </div>
                         </div>
                     </div>
