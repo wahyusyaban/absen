@@ -29,7 +29,7 @@
         .nav-btn:hover { color: #2563eb; }
         .nav-btn:hover i { transform: scale(1.1); }
         
-        /* Active State Fix: Ensure icon stays white even on hover */
+        /* Active State Fix */
         .nav-btn-active { background-color: #2563eb !important; color: #ffffff !important; transform: scale(1.1); box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.4); }
         .nav-btn-active:hover { color: #ffffff !important; }
         .nav-btn-active i { transform: scale(1) !important; }
@@ -132,7 +132,6 @@
                             </div>
                         </div>
                     </div>
-
                     <div id="kepsek-stats-container" class="overflow-x-auto no-scrollbar"></div>
                     <div id="pagination-kepsek-rekap" class="p-5 border-t dark:border-slate-700 flex flex-col sm:flex-row justify-between items-center gap-4 text-slate-400"></div>
                 </div>
@@ -200,8 +199,11 @@
                                 </div>
                             </div>
                             <!-- Cetak Excel Button -->
+                            <button id="btn-cetak-harian-guru" onclick="generateHarianGuruExcel()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-xl font-black text-xs shadow-md shadow-blue-600/20 transition-all flex items-center gap-2 whitespace-nowrap active:scale-95 shrink-0 h-[42px]">
+                                <i class="fas fa-calendar-day"></i> Cetak Harian
+                            </button>
                             <button onclick="openDownloadModalGuru()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-xl font-black text-xs shadow-md shadow-green-600/20 transition-all flex items-center gap-2 whitespace-nowrap active:scale-95 shrink-0 h-[42px]">
-                                <i class="fas fa-file-excel"></i> Cetak Excel
+                                <i class="fas fa-file-excel"></i> Cetak Bulanan
                             </button>
                         </div>
                     </div>
@@ -626,7 +628,7 @@
 
                 htmlRows += `<tr>
                     <td style="border: 1px solid #000; text-align: center; vertical-align: middle;">${idx + 1}</td>
-                    <td style="border: 1px solid #000; text-align: center; vertical-align: middle;">${s.nis}</td>
+                    <td style="border: 1px solid #000; text-align: center; vertical-align: middle; mso-number-format:'\\@';">${s.nis}</td>
                     <td style="border: 1px solid #000; text-align: left; vertical-align: middle;">${s.name}</td>
                     <td style="border: 1px solid #000; text-align: center; vertical-align: middle;">${s.class}</td>
                     <td style="border: 1px solid #000; text-align: center; vertical-align: middle; font-weight: bold; color: #16a34a;">${h}</td>
@@ -706,7 +708,7 @@
             }
         }
         
-        // --- Logika Unduh EXCEL Rekap Absensi Guru ---
+        // --- Logika Unduh EXCEL Rekap Absensi Guru (Bulanan) ---
         function openDownloadModalGuru() {
             const monthSelect = document.getElementById('dl-guru-month');
             const yearSelect = document.getElementById('dl-guru-year');
@@ -828,6 +830,120 @@
                 showToast('Gagal membuat Excel.');
             } finally {
                 closeModal('modal-download-rekap-guru');
+                btn.innerHTML = originalBtnHtml;
+                btn.disabled = false;
+            }
+        }
+
+        // --- Logika Unduh EXCEL Rekap Absensi Guru (Harian) ---
+        async function generateHarianGuruExcel() {
+            const btn = document.getElementById('btn-cetak-harian-guru');
+            const originalBtnHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Proses...';
+            btn.disabled = true;
+
+            try {
+                const dateVal = document.getElementById('filter-kepsek-date').value || getTodayStr();
+                const formatTanggal = (dateStr) => {
+                    if (!dateStr) return '-';
+                    const dt = new Date(dateStr), days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'], parts = dateStr.split('-');
+                    if(parts.length !== 3) return dateStr;
+                    return `${days[dt.getDay()]}, ${parts[2]}/${parts[1]}/${parts[0]}`;
+                };
+                const dateName = formatTanggal(dateVal);
+
+                let targetGurus = db.users.filter(u => u.role === 'guru');
+                targetGurus.sort((a, b) => a.name.localeCompare(b.name));
+
+                const filteredAtt = db.attendanceGuru.filter(a => a.date === dateVal);
+
+                let htmlRows = '';
+                targetGurus.forEach((g, idx) => {
+                    const att = filteredAtt.find(a => String(a.teacher_id) === String(g.id));
+                    let jamMasuk = '-', jamPulang = '-', statusValidasi = '-';
+                    let statusColor = '#64748b'; // slate-500
+                    
+                    if (att) {
+                        jamMasuk = att.time_masuk || '-';
+                        jamPulang = att.time_pulang || '-';
+                        if (att.is_valid === 'valid') { statusValidasi = 'Valid'; statusColor = '#16a34a'; }
+                        else if (att.is_valid === 'invalid') { statusValidasi = 'Tidak Valid'; statusColor = '#e11d48'; }
+                        else { statusValidasi = 'Belum Divalidasi'; statusColor = '#d97706'; }
+                    } else {
+                        statusValidasi = 'Belum Absen';
+                    }
+
+                    htmlRows += `<tr>
+                        <td style="border: 1px solid #000; text-align: center; vertical-align: middle;">${idx + 1}</td>
+                        <td style="border: 1px solid #000; text-align: center; vertical-align: middle; mso-number-format:'\\@';">${g.username}</td>
+                        <td style="border: 1px solid #000; text-align: left; vertical-align: middle;">${g.name}</td>
+                        <td style="border: 1px solid #000; text-align: center; vertical-align: middle;">${jamMasuk}</td>
+                        <td style="border: 1px solid #000; text-align: center; vertical-align: middle;">${jamPulang}</td>
+                        <td style="border: 1px solid #000; text-align: center; vertical-align: middle; font-weight: bold; color: ${statusColor};">${statusValidasi}</td>
+                    </tr>`;
+                });
+
+                if (targetGurus.length === 0) {
+                    htmlRows = `<tr><td colspan="6" style="padding: 20px; text-align: center; border: 1px solid #000;">Tidak ada data guru.</td></tr>`;
+                }
+
+                let kopImgHtml = '';
+                if (db.settings && db.settings.kopSurat && db.settings.kopSurat.length > 5) {
+                    let displayUrl = db.settings.kopSurat.replace(/^'/, '');
+                    if (displayUrl.includes('drive.google.com/file/d/')) {
+                         const match = displayUrl.match(/\/d\/([a-zA-Z0-9_-]+)/);
+                         if (match && match[1]) displayUrl = `https://drive.google.com/uc?export=view&id=${match[1]}`;
+                    }
+                    kopImgHtml = `<tr><td colspan="6" style="text-align: center; height: 120px; vertical-align: middle;"><img src="${displayUrl}" width="800" height="120" style="object-fit: contain;"></td></tr>`;
+                } else {
+                    kopImgHtml = `<tr><td colspan="6" style="text-align: center; height: 60px; color: #999; vertical-align: middle;">Kop Surat Belum Diatur (Hubungi Admin)</td></tr>`;
+                }
+
+                const htmlContent = `
+                    <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+                    <head>
+                        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+                        <meta name="ProgId" content="Excel.Sheet">
+                    </head>
+                    <body style="font-family: Arial, sans-serif;">
+                        <table>
+                            ${kopImgHtml}
+                            <tr><td colspan="6" style="text-align: center; font-size: 16px; font-weight: bold; text-transform: uppercase;">Laporan Harian Kehadiran Guru</td></tr>
+                            <tr><td colspan="6" style="text-align: center; font-size: 12px;">Tanggal: ${dateName}</td></tr>
+                            <tr><td colspan="6"></td></tr>
+                            <tr>
+                                <th style="border: 1px solid #000; background-color: #f8fafc; text-align: center; height: 30px; vertical-align: middle;">No</th>
+                                <th style="border: 1px solid #000; background-color: #f8fafc; text-align: center; vertical-align: middle;">NIP / Username</th>
+                                <th style="border: 1px solid #000; background-color: #f8fafc; text-align: center; vertical-align: middle;">Nama Guru</th>
+                                <th style="border: 1px solid #000; background-color: #f8fafc; text-align: center; vertical-align: middle;">Jam Masuk</th>
+                                <th style="border: 1px solid #000; background-color: #f8fafc; text-align: center; vertical-align: middle;">Jam Pulang</th>
+                                <th style="border: 1px solid #000; background-color: #f8fafc; text-align: center; vertical-align: middle;">Status Validasi</th>
+                            </tr>
+                            ${htmlRows}
+                            <tr><td colspan="6"></td></tr>
+                            <tr>
+                                <td colspan="3"></td>
+                                <td colspan="3" style="text-align: center; vertical-align: bottom;">Mengetahui,<br>Kepala Sekolah<br><br><br><br><b>${currentUser.name}</b></td>
+                            </tr>
+                        </table>
+                    </body>
+                    </html>
+                `;
+
+                const blob = new Blob([htmlContent], { type: 'application/vnd.ms-excel' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Absensi_Harian_Guru_${dateVal}.xls`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+                showToast('Excel Harian Guru Berhasil Diunduh!');
+            } catch (err) {
+                console.error(err);
+                showToast('Gagal membuat Excel Harian.');
+            } finally {
                 btn.innerHTML = originalBtnHtml;
                 btn.disabled = false;
             }
